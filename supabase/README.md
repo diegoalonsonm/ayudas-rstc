@@ -34,35 +34,27 @@ Las migraciones se aplican en orden lexicográfico del nombre de archivo. Studio
 
 ## Pipeline por branch (`dev` vs `main`)
 
-GitHub Actions **no puede escribir** en el Docker de tu laptop. El mapa de ambientes es este:
+El workflow está en `.github/workflows/supabase-migrations.yml`. Mientras el PR está abierto se valida el SQL; las migraciones contra el servidor de desarrollo se aplican **solo cuando el PR a `dev` se mergea** (PR completed).
 
-| Git | Base de datos | Qué hace el workflow |
+| Git | Destino | Cómo se indica el servidor |
 | --- | --- | --- |
-| Trabajo diario + branch `dev` | Instancia **local** (`supabase start`) | En CI se levanta un Postgres local y se aplican las migraciones para validar que el SQL corre |
-| Branch `main` | Proyecto **cloud** de la organización | Tras validar, `supabase db push` aplica solo las migraciones pendientes en producción |
+| PR a `dev` mergeado | Instancia de desarrollo (host alcanzable desde internet) | Secreto `DEV_DATABASE_URL` |
+| Push a `main` | Proyecto cloud de la organización | `PRODUCTION_PROJECT_ID` + password + token |
 
-El workflow está en `.github/workflows/supabase-migrations.yml`.
+El firewall de la máquina de desarrollo debe aceptar Postgres desde los runners de GitHub (no basta con abrir solo tu IP de casa). Preferible TLS (`sslmode=require` en la URL).
 
-### Secretos de GitHub (producción)
+### Secretos de GitHub
 
-En el repositorio: **Settings → Secrets and variables → Actions**. Si usas el environment `production` (recomendado, con aprobación manual), define los secretos ahí:
+**Settings → Secrets and variables → Actions**, o en los environments `development` / `production`:
 
-| Secreto | Valor |
-| --- | --- |
-| `SUPABASE_ACCESS_TOKEN` | [Access token](https://supabase.com/dashboard/account/tokens) de la CLI (cuenta con acceso a la org) |
-| `PRODUCTION_PROJECT_ID` | Ref del proyecto (`https://supabase.com/dashboard/project/<ref>`) |
-| `PRODUCTION_DB_PASSWORD` | Contraseña de la base del proyecto cloud |
+| Secreto | Ambiente | Valor |
+| --- | --- | --- |
+| `DEV_DATABASE_URL` | `development` | `postgresql://usuario:clave@HOST:PUERTO/postgres` (host público de tu instancia) |
+| `SUPABASE_ACCESS_TOKEN` | `production` | [Access token](https://supabase.com/dashboard/account/tokens) de la CLI |
+| `PRODUCTION_PROJECT_ID` | `production` | Ref del proyecto (`https://supabase.com/dashboard/project/<ref>`) |
+| `PRODUCTION_DB_PASSWORD` | `production` | Contraseña de la base del proyecto cloud |
 
-No uses `seed.sql` en producción: `db push` no lo aplica.
-
-### En tu máquina (ambiente de desarrollo)
-
-```bash
-git checkout dev
-supabase start
-# o, si ya estaba corriendo y hay migraciones nuevas:
-supabase db reset
-```
+No uses `seed.sql` en producción: `db push` no lo aplica. En desarrollo, el seed solo corre con `db reset` en esa instancia, no con este pipeline.
 
 ### Producción (manual, solo si hace falta)
 

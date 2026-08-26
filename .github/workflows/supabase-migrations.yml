@@ -2,11 +2,12 @@ name: Migraciones Supabase
 
 on:
   push:
-    branches: [dev, main]
+    branches: [main]
     paths:
       - "supabase/**"
       - ".github/workflows/supabase-migrations.yml"
   pull_request:
+    types: [opened, synchronize, reopened, closed]
     branches: [dev, main]
     paths:
       - "supabase/**"
@@ -19,6 +20,7 @@ permissions:
 jobs:
   validate-local:
     name: Validar migraciones (local)
+    if: github.event_name != 'pull_request' || github.event.action != 'closed'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,6 +34,45 @@ jobs:
 
       - name: Listar historial local
         run: supabase migration list --local
+
+  deploy-development:
+    name: Aplicar migraciones en desarrollo
+    if: >
+      github.event_name == 'pull_request' &&
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true &&
+      github.base_ref == 'dev'
+    runs-on: ubuntu-latest
+    environment: development
+    concurrency:
+      group: supabase-development-migrations
+      cancel-in-progress: false
+    env:
+      DEV_DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Comprobar destino de desarrollo
+        run: |
+          if [ -z "$DEV_DATABASE_URL" ]; then
+            echo "Falta el secreto DEV_DATABASE_URL (postgres://usuario:clave@host:puerto/postgres)."
+            exit 1
+          fi
+
+      - name: Vista previa de migraciones pendientes
+        run: supabase db push --db-url "$DEV_DATABASE_URL" --dry-run
+
+      - name: Aplicar migraciones pendientes
+        run: supabase db push --db-url "$DEV_DATABASE_URL"
+
+      - name: Listar historial remoto
+        run: supabase migration list --db-url "$DEV_DATABASE_URL"
 
   deploy-production:
     name: Aplicar migraciones en producción
