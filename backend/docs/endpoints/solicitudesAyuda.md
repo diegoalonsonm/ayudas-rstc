@@ -1,10 +1,12 @@
 # Solicitudes de ayuda
 
-Ver [cómo usar Postman](README.md). La parroquia receptora debe estar en el alcance del actor. El alta usa `registrar_solicitud_con_ayudas`.
+Ver [cómo probar la API](README.md). La parroquia receptora debe estar en el alcance del actor. El alta usa `registrar_solicitud_con_ayudas`.
 
 Estados: `BORRADOR` → `PRESENTADA` → `EN_REVISION` → `APROBADA` → `ACTIVA` → `FINALIZADA`. Desde varios estados se puede pasar a `CANCELADA`. `RECHAZADA`, `FINALIZADA` y `CANCELADA` son terminales.
 
 ## POST /solicitudes-ayuda
+
+### Cliente REST
 
 | Campo | Valor |
 | --- | --- |
@@ -23,9 +25,20 @@ Estados: `BORRADOR` → `PRESENTADA` → `EN_REVISION` → `APROBADA` → `ACTIV
 }
 ```
 
+### Terminal
+
+```bash
+curl -s -X POST "$BASE_URL/solicitudes-ayuda" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{\"personaSolicitanteId\":\"$PERSONA_ID\",\"parroquiaReceptoraId\":\"$PARROQUIA_ID\",\"sectorOficial\":\"Barrio Centro\",\"tiposAyuda\":[\"$TIPO_AYUDA_ID\"],\"estado\":\"BORRADOR\"}"
+```
+
 ## GET /solicitudes-ayuda
 
 Listado filtrado por parroquias accesibles.
+
+### Cliente REST
 
 | Campo | Valor |
 | --- | --- |
@@ -34,9 +47,18 @@ Listado filtrado por parroquias accesibles.
 | Auth | Bearer Token `{{tokenAcceso}}` |
 | Body | ninguno |
 
+### Terminal
+
+```bash
+curl -s "$BASE_URL/solicitudes-ayuda" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
 ## GET /solicitudes-ayuda/:id
 
 Expediente completo. Audita `CONSULTAR_EXPEDIENTE`.
+
+### Cliente REST
 
 | Campo | Valor |
 | --- | --- |
@@ -45,9 +67,18 @@ Expediente completo. Audita `CONSULTAR_EXPEDIENTE`.
 | Auth | Bearer Token `{{tokenAcceso}}` |
 | Body | ninguno |
 
+### Terminal
+
+```bash
+curl -s "$BASE_URL/solicitudes-ayuda/$SOLICITUD_ID" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
 ## PATCH /solicitudes-ayuda/:id
 
 Campos de entrevista (no el estado).
+
+### Cliente REST
 
 | Campo | Valor |
 | --- | --- |
@@ -63,7 +94,18 @@ Campos de entrevista (no el estado).
 }
 ```
 
+### Terminal
+
+```bash
+curl -s -X PATCH "$BASE_URL/solicitudes-ayuda/$SOLICITUD_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"fechaEntrevista":"2026-09-07","observaciones":"Visita domiciliaria pendiente"}'
+```
+
 ## POST /solicitudes-ayuda/:id/estado
+
+### Cliente REST
 
 | Campo | Valor |
 | --- | --- |
@@ -79,7 +121,18 @@ Campos de entrevista (no el estado).
 }
 ```
 
+### Terminal
+
+```bash
+curl -s -X POST "$BASE_URL/solicitudes-ayuda/$SOLICITUD_ID/estado" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"estadoNuevo":"PRESENTADA","motivo":"Entrevista completa"}'
+```
+
 ## POST /solicitudes-ayuda/:id/eliminacion
+
+### Cliente REST
 
 | Campo | Valor |
 | --- | --- |
@@ -94,7 +147,18 @@ Campos de entrevista (no el estado).
 }
 ```
 
+### Terminal
+
+```bash
+curl -s -X POST "$BASE_URL/solicitudes-ayuda/$SOLICITUD_ID/eliminacion" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"motivo":"Duplicada"}'
+```
+
 ## POST /solicitudes-ayuda/:id/restauracion
+
+### Cliente REST
 
 | Campo | Valor |
 | --- | --- |
@@ -109,7 +173,18 @@ Campos de entrevista (no el estado).
 }
 ```
 
+### Terminal
+
+```bash
+curl -s -X POST "$BASE_URL/solicitudes-ayuda/$SOLICITUD_ID/restauracion" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"motivo":"Eliminada por error"}'
+```
+
 ## Integrantes
+
+### Cliente REST
 
 | Campo | Valor |
 | --- | --- |
@@ -132,9 +207,23 @@ Campos de entrevista (no el estado).
 }
 ```
 
-`PATCH {{baseUrl}}/solicitudes-ayuda/{{solicitudId}}/integrantes/{{integranteId}}` con el mismo tipo de body parcial.
+`PATCH {{baseUrl}}/solicitudes-ayuda/{{solicitudId}}/integrantes/{{integranteId}}` con body parcial.
+
+### Terminal
+
+```bash
+curl -s "$BASE_URL/solicitudes-ayuda/$SOLICITUD_ID/integrantes" \
+  -H "Authorization: Bearer $TOKEN"
+
+curl -s -X POST "$BASE_URL/solicitudes-ayuda/$SOLICITUD_ID/integrantes" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"nombreCompleto":"Juan Solano","ocupacion":"Jornalero"}'
+```
 
 ## Evaluación de vivienda
+
+### Cliente REST
 
 | Campo | Valor |
 | --- | --- |
@@ -156,7 +245,21 @@ Campos de entrevista (no el estado).
 }
 ```
 
+### Terminal
+
+```bash
+curl -s "$BASE_URL/solicitudes-ayuda/$SOLICITUD_ID/evaluacion-vivienda" \
+  -H "Authorization: Bearer $TOKEN"
+
+curl -s -X POST "$BASE_URL/solicitudes-ayuda/$SOLICITUD_ID/evaluacion-vivienda" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"observaciones":"Techo de zinc"}'
+```
+
 ## Ayudas solicitadas
+
+### Cliente REST
 
 | Campo | Valor |
 | --- | --- |
@@ -179,4 +282,21 @@ Campos de entrevista (no el estado).
 }
 ```
 
-`DELETE {{baseUrl}}/solicitudes-ayuda/{{solicitudId}}/ayudas-solicitadas/{{ayudaId}}` con body `{ "motivo": "Selección incorrecta" }`.
+`DELETE` del ítem: body `{ "motivo": "Selección incorrecta" }`.
+
+### Terminal
+
+```bash
+curl -s "$BASE_URL/solicitudes-ayuda/$SOLICITUD_ID/ayudas-solicitadas" \
+  -H "Authorization: Bearer $TOKEN"
+
+curl -s -X POST "$BASE_URL/solicitudes-ayuda/$SOLICITUD_ID/ayudas-solicitadas" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{\"tipoAyudaId\":\"$TIPO_AYUDA_ID\",\"detalle\":null}"
+
+curl -s -X DELETE "$BASE_URL/solicitudes-ayuda/$SOLICITUD_ID/ayudas-solicitadas/$AYUDA_ID" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"motivo":"Selección incorrecta"}'
+```

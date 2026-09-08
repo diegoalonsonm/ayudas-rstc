@@ -49,7 +49,12 @@ npm install
 npm run start:dev
 ```
 
-La API queda en `http://localhost:3000/api/v1`. En Postman, Insomnia o similar: `GET {{baseUrl}}/salud` con `baseUrl=http://localhost:3000/api/v1`.
+La API queda en `http://localhost:3000/api/v1`.
+
+Comprobación rápida:
+
+- Cliente REST: `GET {{baseUrl}}/salud` con `baseUrl=http://localhost:3000/api/v1`
+- Terminal: `curl -s http://localhost:3000/api/v1/salud`
 
 ## Primer administrador
 
@@ -83,7 +88,7 @@ El resto exige `Authorization: Bearer <access_token>` de Supabase Auth. El backe
 
 ## Documentación
 
-- Endpoints para Postman / Insomnia / Bruno: [`docs/endpoints`](docs/endpoints) (empiece por [`docs/endpoints/README.md`](docs/endpoints/README.md))
+- Endpoints (Postman / Bruno / Thunder Client y `curl`): [`docs/endpoints`](docs/endpoints) (empiece por [`docs/endpoints/README.md`](docs/endpoints/README.md))
 - Modelos de dominio: [`docs/models`](docs/models)
 
 ## Arquitectura

@@ -1,9 +1,11 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from "@nestjs/common";
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from "@nestjs/common";
 import { Response } from "express";
 import { ErrorDominio } from "../../../domain/errors/errorDominio";
 
 @Catch()
 export class FiltroExcepcionesHttp implements ExceptionFilter {
+  private readonly logger = new Logger(FiltroExcepcionesHttp.name);
+
   catch(exception: unknown, host: ArgumentsHost): void {
     const response = host.switchToHttp().getResponse<Response>();
     if (exception instanceof ErrorDominio) {
@@ -23,6 +25,9 @@ export class FiltroExcepcionesHttp implements ExceptionFilter {
       );
       return;
     }
+    this.logger.error(
+      exception instanceof Error ? exception.stack ?? exception.message : String(exception),
+    );
     response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       codigo: "INTERNO",
       mensaje: "Error interno",

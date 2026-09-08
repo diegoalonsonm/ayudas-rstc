@@ -1,5 +1,5 @@
 import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/common";
-import { Reflector } from "@nestjs/core";
+import { ContextIdFactory, ModuleRef, Reflector } from "@nestjs/core";
 import { randomUUID } from "crypto";
 import { Request } from "express";
 import { PUERTO_AUTENTICACION, PuertoAutenticacion } from "../../../application/ports/puertosAplicacion";
@@ -12,7 +12,7 @@ export class AutenticacionGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     @Inject(PUERTO_AUTENTICACION) private readonly puertoAutenticacion: PuertoAutenticacion,
-    @Inject(REPOSITORIO_USUARIOS) private readonly repositorioUsuarios: RepositorioUsuarios,
+    private readonly moduleRef: ModuleRef,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -30,11 +30,12 @@ export class AutenticacionGuard implements CanActivate {
     }
     const token = header.slice("Bearer ".length);
     const verificado = await this.puertoAutenticacion.verificarToken(token);
-    const usuario = await this.repositorioUsuarios.obtenerPorIdentidadAutenticacion(verificado.sub);
+    const repositorioUsuarios = await this.resolverRepositorioUsuarios(request);
+    const usuario = await repositorioUsuarios.obtenerPorIdentidadAutenticacion(verificado.sub);
     if (!usuario || usuario.eliminadoEn || !usuario.activo) {
       throw new ErrorNoAutenticado("Usuario inactivo o inexistente");
     }
-    const asignacion = await this.repositorioUsuarios.obtenerAsignacionVigente(usuario.id);
+    const asignacion = await repositorioUsuarios.obtenerAsignacionVigente(usuario.id);
     if (!asignacion) {
       throw new ErrorNoAutenticado("El usuario no tiene una asignación vigente");
     }
@@ -55,5 +56,13 @@ export class AutenticacionGuard implements CanActivate {
       identificadorSolicitud: String(request.headers["x-request-id"] ?? randomUUID()),
     };
     return true;
+  }
+
+  private async resolverRepositorioUsuarios(request: Request): Promise<RepositorioUsuarios> {
+    const contextId = ContextIdFactory.getByRequest(request);
+    this.moduleRef.registerRequestByContextId(request, contextId);
+    return this.moduleRef.resolve<RepositorioUsuarios>(REPOSITORIO_USUARIOS, contextId, {
+      strict: false,
+    });
   }
 }

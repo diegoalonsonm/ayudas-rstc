@@ -1,10 +1,14 @@
 # Salud
 
-Ver [cómo usar Postman](README.md).
+Ver [cómo probar la API](README.md).
 
 ## GET /salud
 
 Pública. Comprueba que la API está viva.
+
+Respuesta: `{ "estado": "ok" }`.
+
+### Cliente REST
 
 | Campo | Valor |
 | --- | --- |
@@ -13,10 +17,8 @@ Pública. Comprueba que la API está viva.
 | Auth | No auth |
 | Body | ninguno |
 
-Respuesta:
+### Terminal
 
-```json
-{
-  "estado": "ok"
-}
+```bash
+curl -s "$BASE_URL/salud"
 ```

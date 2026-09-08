@@ -70,7 +70,11 @@ describe("AlcanceGuard", () => {
       obtenerParroquia: jest.fn().mockResolvedValue({ id: "p2", vicariaId: "v1" }),
       obtenerVicaria: jest.fn().mockResolvedValue({ id: "v1", diocesisId: "d1" }),
     };
-    const guard = new AlcanceGuard(organizacion as never);
+    const moduleRef = {
+      registerRequestByContextId: jest.fn(),
+      resolve: jest.fn().mockResolvedValue(organizacion),
+    };
+    const guard = new AlcanceGuard(moduleRef as never);
     await expect(
       guard.canActivate(
         contexto({

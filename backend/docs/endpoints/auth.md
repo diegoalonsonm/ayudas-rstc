@@ -1,10 +1,14 @@
 # Auth
 
-Ver [cómo usar Postman](README.md) (`baseUrl`, `tokenAcceso`).
+Ver [cómo probar la API](README.md) (cliente REST y terminal).
 
 ## POST /auth/sesiones
 
 Pública. Intercambia correo y contraseña por tokens de Supabase Auth.
+
+Respuesta: `tokenAcceso`, `tokenRenovacion`, `expiraEn`, `usuario`, `asignacion`.
+
+### Cliente REST
 
 | Campo | Valor |
 | --- | --- |
@@ -20,11 +24,21 @@ Pública. Intercambia correo y contraseña por tokens de Supabase Auth.
 }
 ```
 
-Respuesta: `tokenAcceso`, `tokenRenovacion`, `expiraEn`, `usuario`, `asignacion`. Guarde los tokens en las variables de la colección.
+Guarde los tokens en las variables de la colección.
+
+### Terminal
+
+```bash
+curl -s -X POST "$BASE_URL/auth/sesiones" \
+  -H "Content-Type: application/json" \
+  -d '{"correo":"admin@local.test","contrasena":"Cambiar1234"}'
+```
 
 ## POST /auth/sesiones/renovacion
 
-Pública.
+Pública. Respuesta: nuevos `tokenAcceso`, `tokenRenovacion`, `expiraEn`.
+
+### Cliente REST
 
 | Campo | Valor |
 | --- | --- |
@@ -39,11 +53,21 @@ Pública.
 }
 ```
 
-Respuesta: nuevos `tokenAcceso`, `tokenRenovacion`, `expiraEn`. Actualice las variables de la colección.
+### Terminal
+
+```bash
+curl -s -X POST "$BASE_URL/auth/sesiones/renovacion" \
+  -H "Content-Type: application/json" \
+  -d "{\"tokenRenovacion\":\"$TOKEN_RENOVACION\"}"
+```
+
+Defina `TOKEN_RENOVACION` con el `tokenRenovacion` del login.
 
 ## DELETE /auth/sesiones
 
 Cierra la sesión del JWT actual.
+
+### Cliente REST
 
 | Campo | Valor |
 | --- | --- |
@@ -52,9 +76,18 @@ Cierra la sesión del JWT actual.
 | Auth | Bearer Token `{{tokenAcceso}}` |
 | Body | ninguno |
 
+### Terminal
+
+```bash
+curl -s -X DELETE "$BASE_URL/auth/sesiones" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
 ## GET /auth/sesion
 
 Devuelve el actor actual (rol y alcance).
+
+### Cliente REST
 
 | Campo | Valor |
 | --- | --- |
@@ -62,3 +95,10 @@ Devuelve el actor actual (rol y alcance).
 | URL | `{{baseUrl}}/auth/sesion` |
 | Auth | Bearer Token `{{tokenAcceso}}` |
 | Body | ninguno |
+
+### Terminal
+
+```bash
+curl -s "$BASE_URL/auth/sesion" \
+  -H "Authorization: Bearer $TOKEN"
+```
