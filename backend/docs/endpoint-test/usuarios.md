@@ -8,11 +8,7 @@
 | execution | `run` |
 | method | `GET` |
 | path | `/usuarios` |
-| auth | Bearer |
 | expectedStatus | `200` |
-| assertions | lista presente |
-| captures | `usuarioId` (sesión o primer ítem) |
-| wave | 2 |
 
 ## usuarios-get-id
 
@@ -22,38 +18,25 @@
 | execution | `run` |
 | method | `GET` |
 | path | `/usuarios/{{usuarioId}}` |
-| auth | Bearer |
 | expectedStatus | `200` |
-| assertions | incluye asignación vigente si aplica |
-| dependsOn | `usuarios-get` o `auth-post-sesiones` |
-| wave | 2 |
 
 ## usuarios-post
 
 | Campo | Valor |
 | --- | --- |
 | id | `usuarios-post` |
-| execution | `skipped` |
-| reason | Fuera del happy path (alta de identidad Auth) |
+| execution | `run` |
 | method | `POST` |
 | path | `/usuarios` |
+| expectedStatus | `200` o `201` |
+| captures | `usuarioCreadoId` |
+
+Correo único `endpoint.test.<stamp>@local.test`. Alcance: parroquia TEST o la primera de GET.
 
 ## usuarios-patch-id
 
-| Campo | Valor |
-| --- | --- |
-| id | `usuarios-patch-id` |
-| execution | `skipped` |
-| reason | No baja/desactivación de usuarios |
-| method | `PATCH` |
-| path | `/usuarios/{{usuarioId}}` |
+PATCH `{ "activo": false, "motivo": "..." }` sobre el usuario creado. Si el alta falla, se intenta contra el usuario de sesión.
 
 ## usuarios-post-asignaciones
 
-| Campo | Valor |
-| --- | --- |
-| id | `usuarios-post-asignaciones` |
-| execution | `skipped` |
-| reason | No reasignación de roles en happy path |
-| method | `POST` |
-| path | `/usuarios/{{usuarioId}}/asignaciones` |
+POST `{ "rolCodigo": "COORDINADOR_PARROQUIAL", "parroquiaId": "...", "motivo": "..." }`.

@@ -1,24 +1,20 @@
-# solicitudes-post-eliminacion
+# catalogos-get-condiciones-vivienda
 
 - verdict: **failed entirely**
-- timestamp: 2026-09-08T14:24:54.266Z
+- timestamp: 2026-09-08T14:24:54.087Z
 - durationMs: 2
 
 ## Assertions
 
 - fail: HTTP 401 matches expected 200
 - fail: tokenAcceso available before authenticated request
+- fail: lista presente
 
 ## Request
 
 ```http
-POST http://localhost:3000/api/v1/solicitudes-ayuda/00000000-0000-0000-0000-000000000000/eliminacion
-Content-Type: application/json
+GET http://localhost:3000/api/v1/catalogos/condiciones-vivienda
 Authorization: (missing tokenAcceso)
-
-{
-  "motivo": "Duplicada (prueba endpoint-test)"
-}
 ```
 
 ## Response

@@ -1,23 +1,40 @@
 # organizacion-post-vicarias
 
 - verdict: **failed entirely**
-- timestamp: 2026-09-07T19:12:22.242Z
-- durationMs: n/a
-- notes: No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso)
+- timestamp: 2026-09-08T14:24:54.126Z
+- durationMs: 3
 
 ## Assertions
 
-- fail: tokenAcceso available
+- fail: HTTP 401 matches expected 200|201
+- fail: tokenAcceso available before authenticated request
 
 ## Request
 
 ```http
-(not sent)
+POST http://localhost:3000/api/v1/vicarias
+Content-Type: application/json
+Authorization: (missing tokenAcceso)
+
+{
+  "nombre": "Vicaría TEST 1788877468590",
+  "codigo": "TV468590",
+  "diocesisId": "00000000-0000-0000-0000-000000000000"
+}
 ```
 
 ## Response
 
 ```http
-(n/a)
+HTTP 401
+connection: keep-alive
+content-length: 54
+content-type: application/json; charset=utf-8
+date: Tue, 08 Sep 2026 14:24:54 GMT
+etag: W/"36-7/fXKejgUjZKN8aW/UmVt+Lgj/Q"
+keep-alive: timeout=5
+x-powered-by: Express
+
+{"codigo":"NO_AUTENTICADO","mensaje":"No autenticado"}
 ```
 

@@ -1,13 +1,13 @@
 # salud-get
 
-- verdict: **failed entirely**
-- timestamp: 2026-09-07T19:12:22.235Z
+- verdict: **succeeded**
+- timestamp: 2026-09-08T14:24:28.614Z
 - durationMs: 23
 
 ## Assertions
 
-- fail: HTTP 500 matches expected 200
-- fail: estado === ok
+- pass: HTTP 200 matches expected 200
+- pass: estado === ok
 
 ## Request
 
@@ -18,15 +18,15 @@ GET http://localhost:3000/api/v1/salud
 ## Response
 
 ```http
-HTTP 500
+HTTP 200
 connection: keep-alive
-content-length: 46
+content-length: 15
 content-type: application/json; charset=utf-8
-date: Mon, 07 Sep 2026 19:12:22 GMT
-etag: W/"2e-Dh0HQtbGhii9BnpI31Ko0y4VuTg"
+date: Tue, 08 Sep 2026 14:24:28 GMT
+etag: W/"f-zEyU8uspYexNXQo+eM6rxYB/Bc0"
 keep-alive: timeout=5
 x-powered-by: Express
 
-{"codigo":"INTERNO","mensaje":"Error interno"}
+{"estado":"ok"}
 ```
 

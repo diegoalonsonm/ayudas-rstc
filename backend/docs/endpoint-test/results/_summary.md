@@ -1,85 +1,93 @@
 # Resultados de endpoints
 
 - baseUrl: `http://localhost:3000/api/v1`
-- timestamp: 2026-09-07T19:12:22.253Z
-- Postman collection: ayudas-rstc (`29171076-9bae6770-5087-4b67-83e7-9654aab192c9`)
+- timestamp: 2026-09-08T14:24:54.286Z
 
 ## Conteos
 
-- succeeded: 0
+- succeeded: 1
 - failed partially: 0
-- failed entirely: 51
-- skipped: 14
+- failed entirely: 74
 
-La API en localhost:3000 respondió HTTP 500 (codigo INTERNO) en GET /salud y POST /auth/sesiones. El resto de casos autenticados no se envió.
+POST /auth/sesiones no devolvió tokenAcceso (la API no pudo hablar con Auth/Supabase). Los casos autenticados se enviaron igual y quedaron documentados, en su mayoría HTTP 401.
 
 ## Detalle
 
 | id | verdict | notes |
 | --- | --- | --- |
-| catalogos-post-cantones | skipped | Fuera del happy path; no mutar catálogos existentes |
-| catalogos-patch-cantones-id | skipped | Fuera del happy path |
-| catalogos-delete-cantones-id | skipped | No DELETE de catálogos existentes |
-| organizacion-patch-diocesis-id | skipped | No PATCH de organización existente |
-| organizacion-delete-diocesis-id | skipped | No DELETE de organización existente |
-| organizacion-patch-vicarias-id | skipped | No PATCH de organización existente |
-| organizacion-delete-vicarias-id | skipped | No DELETE de organización existente |
-| organizacion-patch-parroquias-id | skipped | No PATCH de organización existente |
-| organizacion-delete-parroquias-id | skipped | No DELETE de organización existente |
-| usuarios-post | skipped | Fuera del happy path (alta de identidad Auth) |
-| usuarios-patch-id | skipped | No baja/desactivación de usuarios |
-| usuarios-post-asignaciones | skipped | No reasignación de roles en happy path |
-| solicitudes-post-eliminacion | skipped | Fuera del happy path |
-| solicitudes-post-restauracion | skipped | Fuera del happy path |
-| salud-get | failed entirely |  |
+| salud-get | succeeded |  |
 | auth-post-sesiones | failed entirely |  |
-| auth-get-sesion | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| auth-post-sesiones-renovacion | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| catalogos-get-tipos-documento | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| catalogos-get-tipos-ayuda | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| catalogos-get-roles | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| catalogos-get-roles-id | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| organizacion-get-diocesis | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| organizacion-post-diocesis | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| organizacion-get-diocesis-id | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| organizacion-get-vicarias | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| organizacion-post-vicarias | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| organizacion-get-vicarias-id | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| organizacion-get-parroquias | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| organizacion-post-parroquias | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| organizacion-get-parroquias-id | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| usuarios-get | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| usuarios-get-id | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| personas-post | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| personas-get | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| personas-get-id | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| personas-patch-id | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| personas-post-busquedas | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| personas-post-direcciones | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| personas-get-direcciones | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| personas-patch-direcciones-id | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| solicitudes-post | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| solicitudes-get | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| solicitudes-get-id | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| solicitudes-patch-id | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| solicitudes-post-estado-presentada | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| solicitudes-get-integrantes | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| solicitudes-post-integrantes | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| solicitudes-patch-integrantes-id | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| solicitudes-get-evaluacion-vivienda | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| solicitudes-post-evaluacion-vivienda | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| solicitudes-get-ayudas-solicitadas | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| solicitudes-post-ayudas-solicitadas | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| solicitudes-delete-ayudas-solicitadas-id | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| planes-get | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| planes-post | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| planes-get-detalles | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| planes-post-detalles | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| planes-get-entregas | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| planes-post-entregas | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| documentos-get | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| documentos-post | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| documentos-get-url | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| auditoria-get | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
-| auth-delete-sesiones | failed entirely | No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso) |
+| auth-get-sesion | failed entirely |  |
+| auth-post-sesiones-renovacion | failed entirely | tokenRenovacion no capturado; se envía placeholder |
+| catalogos-get-tipos-documento | failed entirely |  |
+| catalogos-get-sexos | failed entirely |  |
+| catalogos-get-grados-academicos | failed entirely |  |
+| catalogos-get-parentescos | failed entirely |  |
+| catalogos-get-rangos-ingreso | failed entirely |  |
+| catalogos-get-tipos-vivienda | failed entirely |  |
+| catalogos-get-tipos-tenencia | failed entirely |  |
+| catalogos-get-condiciones-vivienda | failed entirely |  |
+| catalogos-get-tipos-ayuda | failed entirely |  |
+| catalogos-get-roles | failed entirely |  |
+| catalogos-get-cantones | failed entirely |  |
+| catalogos-get-distritos | failed entirely |  |
+| catalogos-get-barrios | failed entirely |  |
+| catalogos-get-roles-id | failed entirely | rolId no capturado; se usa UUID placeholder |
+| catalogos-post-cantones | failed entirely |  |
+| catalogos-patch-cantones-id | failed entirely | cantonId no capturado; se usa UUID placeholder |
+| catalogos-delete-cantones-id | failed entirely |  |
+| organizacion-get-diocesis | failed entirely |  |
+| organizacion-post-diocesis | failed entirely |  |
+| organizacion-get-diocesis-id | failed entirely |  |
+| organizacion-patch-diocesis-id | failed entirely |  |
+| organizacion-get-vicarias | failed entirely |  |
+| organizacion-post-vicarias | failed entirely |  |
+| organizacion-get-vicarias-id | failed entirely |  |
+| organizacion-patch-vicarias-id | failed entirely |  |
+| organizacion-get-parroquias | failed entirely |  |
+| organizacion-post-parroquias | failed entirely |  |
+| organizacion-get-parroquias-id | failed entirely |  |
+| organizacion-patch-parroquias-id | failed entirely |  |
+| usuarios-get | failed entirely |  |
+| usuarios-get-id | failed entirely |  |
+| usuarios-post | failed entirely |  |
+| usuarios-patch-id | failed entirely | PATCH sobre usuario de sesión (no se pudo crear uno de prueba) |
+| usuarios-post-asignaciones | failed entirely | Sin usuario creado; se intenta contra usuario de sesión (puede fallar por autoasignación) |
+| personas-post | failed entirely |  |
+| personas-get | failed entirely |  |
+| personas-get-id | failed entirely |  |
+| personas-patch-id | failed entirely |  |
+| personas-post-busquedas | failed entirely |  |
+| personas-post-direcciones | failed entirely |  |
+| personas-get-direcciones | failed entirely |  |
+| personas-patch-direcciones-id | failed entirely |  |
+| solicitudes-post | failed entirely |  |
+| solicitudes-get | failed entirely |  |
+| solicitudes-get-id | failed entirely |  |
+| solicitudes-patch-id | failed entirely |  |
+| solicitudes-post-estado-presentada | failed entirely |  |
+| solicitudes-get-integrantes | failed entirely |  |
+| solicitudes-post-integrantes | failed entirely |  |
+| solicitudes-patch-integrantes-id | failed entirely |  |
+| solicitudes-get-evaluacion-vivienda | failed entirely |  |
+| solicitudes-post-evaluacion-vivienda | failed entirely |  |
+| solicitudes-get-ayudas-solicitadas | failed entirely |  |
+| solicitudes-post-ayudas-solicitadas | failed entirely |  |
+| solicitudes-delete-ayudas-solicitadas-id | failed entirely |  |
+| planes-get | failed entirely |  |
+| planes-post | failed entirely |  |
+| planes-get-detalles | failed entirely |  |
+| planes-post-detalles | failed entirely |  |
+| planes-get-entregas | failed entirely |  |
+| planes-post-entregas | failed entirely |  |
+| documentos-get | failed entirely |  |
+| documentos-post | failed entirely |  |
+| documentos-get-url | failed entirely |  |
+| auditoria-get | failed entirely |  |
+| solicitudes-post-eliminacion | failed entirely |  |
+| solicitudes-post-restauracion | failed entirely |  |
+| organizacion-delete-parroquias-id | failed entirely | Sin parroquia TEST; UUID placeholder |
+| organizacion-delete-vicarias-id | failed entirely |  |
+| organizacion-delete-diocesis-id | failed entirely |  |
+| auth-delete-sesiones | failed entirely |  |
 

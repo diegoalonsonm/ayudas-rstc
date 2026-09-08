@@ -1,26 +1,34 @@
 # Casos de prueba de endpoints
 
-Casos derivados de [`../endpoints/`](../endpoints/). Ejecución feliz contra `http://localhost:3000/api/v1`.
+Casos derivados de [`../endpoints/`](../endpoints/). Ejecución contra `http://localhost:3000/api/v1`.
+
+Orden: salud → login → sesión/renovación → catálogos → organización (árbol `TEST-*`) → usuarios → personas → solicitudes → planes → documentos → auditoría → eliminación/restauración de solicitud → DELETE del árbol TEST → cierre de sesión.
+
+Mutaciones usan códigos/correos únicos por corrida. PATCH/DELETE de organización y catálogos actúan sobre filas creadas en la misma corrida, no sobre datos semilla.
 
 ## Formato de cada caso
 
 | Campo | Significado |
 | --- | --- |
 | `id` | Identificador estable; coincide con el archivo en `results/` |
-| `execution` | `run` o `skipped` (fuera del happy path) |
+| `execution` | `run` |
 | `expectedStatus` | Familia o código HTTP esperado |
 | `captures` | Campos de la respuesta a reutilizar |
 
 ## Resultados
 
-Ver [`results/_summary.md`](results/_summary.md). Veredictos: `succeeded`, `failed partially`, `failed entirely`. Los casos `skipped` no se marcan como fallo.
+Ver [`results/_summary.md`](results/_summary.md). Veredictos: `succeeded`, `failed partially`, `failed entirely`.
+
+- **succeeded**: HTTP esperado y aserciones de cuerpo OK
+- **failed partially**: HTTP esperado, alguna aserción de cuerpo falló
+- **failed entirely**: HTTP fuera de lo esperado, error de red, o el request autenticado salió sin `tokenAcceso`
 
 Tokens JWT, `Authorization` y URLs firmadas se redactan en los resultados.
 
-## Postman
+## Cómo correr
 
-- Colección: `ayudas-rstc` (`29171076-9bae6770-5087-4b67-83e7-9654aab192c9`)
-- Environment: `ayudas-rstc-local` (`29171076-9c132a2b-94b5-443b-a53f-0ce0c9e5c329`)
-- Workspace: My Workspace (`2e9c75b9-187f-4093-8105-bfb7a5025c1b`)
+```bash
+node backend/docs/endpoint-test/run-endpoint-tests.mjs
+```
 
-El MCP de Postman no ejecuta contra localhost. La corrida local usa `node run-endpoint-tests.mjs`.
+Variables opcionales: `BASE_URL`, `AUTH_CORREO`, `AUTH_CONTRASENA`.

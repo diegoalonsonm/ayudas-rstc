@@ -93,20 +93,21 @@
 | Campo | Valor |
 | --- | --- |
 | id | `solicitudes-post-eliminacion` |
-| execution | `skipped` |
-| reason | Fuera del happy path |
+| execution | `run` |
 | method | `POST` |
 | path | `/solicitudes-ayuda/{{solicitudId}}/eliminacion` |
+| expectedStatus | `200` |
+| notes | al final de la corrida, después de planes y documentos |
 
 ## solicitudes-post-restauracion
 
 | Campo | Valor |
 | --- | --- |
 | id | `solicitudes-post-restauracion` |
-| execution | `skipped` |
-| reason | Fuera del happy path |
+| execution | `run` |
 | method | `POST` |
 | path | `/solicitudes-ayuda/{{solicitudId}}/restauracion` |
+| expectedStatus | `200` |
 
 ## solicitudes-get-integrantes
 

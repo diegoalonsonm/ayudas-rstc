@@ -1,12 +1,12 @@
 # auth-post-sesiones
 
 - verdict: **failed entirely**
-- timestamp: 2026-09-07T19:12:22.238Z
-- durationMs: 2
+- timestamp: 2026-09-08T14:24:28.623Z
+- durationMs: 8
 
 ## Assertions
 
-- fail: HTTP 500 matches expected 200|201
+- fail: HTTP 422 matches expected 200|201
 - fail: tokenAcceso presente
 - fail: tokenRenovacion presente
 - fail: usuario presente
@@ -26,15 +26,15 @@ Content-Type: application/json
 ## Response
 
 ```http
-HTTP 500
+HTTP 422
 connection: keep-alive
-content-length: 46
+content-length: 59
 content-type: application/json; charset=utf-8
-date: Mon, 07 Sep 2026 19:12:22 GMT
-etag: W/"2e-Dh0HQtbGhii9BnpI31Ko0y4VuTg"
+date: Tue, 08 Sep 2026 14:24:28 GMT
+etag: W/"3b-h5NK9Dq/79ode4EYae2bKMhTZr8"
 keep-alive: timeout=5
 x-powered-by: Express
 
-{"codigo":"INTERNO","mensaje":"Error interno"}
+{"codigo":"VALIDACION","mensaje":"TypeError: fetch failed"}
 ```
 
