@@ -68,7 +68,7 @@ erDiagram
 
 - `id`
 - `nombre`
-- `codigo`
+- `codigo`: identificador interno de control. Si no se indica al crear, la BD asigna `D01`, `D02`, … (no es UUID). Se puede enviar un valor explícito si más adelante existe un código institucional.
 - Campos comunes de auditoría y borrado lógico.
 
 ### `vicarias`
@@ -76,7 +76,7 @@ erDiagram
 - `id`
 - `diocesis_id`
 - `nombre`
-- `codigo`
+- `codigo`: si no se indica, la BD asigna `{codigo_diócesis}-V01` (p. ej. `D01-V01`).
 - Campos comunes.
 
 ### `parroquias`
@@ -84,7 +84,7 @@ erDiagram
 - `id`
 - `vicaria_id`
 - `nombre`
-- `codigo`
+- `codigo`: si no se indica, la BD asigna `{codigo_vicaría}-P001` (p. ej. `D01-V01-P001`).
 - Campos comunes.
 
 Relación jerárquica:

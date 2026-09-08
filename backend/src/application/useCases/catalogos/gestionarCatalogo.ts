@@ -101,10 +101,14 @@ export class GestionarCatalogo {
 
   crear(actor: ActorActual, tabla: string, datos: Record<string, unknown>) {
     this.exigirAdministrador(actor);
-    return this.repositorioGenerico.insertar(tabla, {
+    const payload: Record<string, unknown> = {
       ...datos,
       creadoPorUsuarioId: actor.usuarioId,
-    });
+    };
+    if (typeof payload.codigo === "string" && !payload.codigo.trim()) {
+      delete payload.codigo;
+    }
+    return this.repositorioGenerico.insertar(tabla, payload);
   }
 
   actualizar(actor: ActorActual, tabla: string, id: string, datos: Record<string, unknown>) {

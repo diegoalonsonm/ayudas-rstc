@@ -369,8 +369,9 @@ export class OrganizacionDto {
   @IsString()
   nombre!: string;
 
+  @IsOptional()
   @IsString()
-  codigo!: string;
+  codigo?: string;
 
   @IsOptional()
   @IsUUID()

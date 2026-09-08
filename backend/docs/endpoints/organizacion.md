@@ -37,10 +37,11 @@ Rol: `ADMINISTRADOR`.
 
 ```json
 {
-  "nombre": "Diócesis de Cartago",
-  "codigo": "CARTAGO"
+  "nombre": "Diócesis de Cartago"
 }
 ```
+
+`codigo` es opcional. Si se omite, la BD asigna `D01`, `D02`, … Si más adelante hay un código institucional, se puede enviar en el cuerpo.
 
 ### Terminal
 
@@ -48,7 +49,7 @@ Rol: `ADMINISTRADOR`.
 curl -s -X POST "$BASE_URL/diocesis" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"nombre":"Diócesis de Cartago","codigo":"CARTAGO"}'
+  -d '{"nombre":"Diócesis de Cartago"}'
 ```
 
 ## PATCH /diocesis/:id
@@ -123,10 +124,11 @@ Mismos verbos sobre `/vicarias`. Al crear hace falta `diocesisId`.
 ```json
 {
   "nombre": "Vicaría Norte",
-  "codigo": "VN",
   "diocesisId": "{{diocesisId}}"
 }
 ```
+
+`codigo` es opcional. Si se omite, la BD asigna `{codigo_diócesis}-V01`.
 
 ### Terminal
 
@@ -134,7 +136,7 @@ Mismos verbos sobre `/vicarias`. Al crear hace falta `diocesisId`.
 curl -s -X POST "$BASE_URL/vicarias" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d "{\"nombre\":\"Vicaría Norte\",\"codigo\":\"VN\",\"diocesisId\":\"$DIOCESIS_ID\"}"
+  -d "{\"nombre\":\"Vicaría Norte\",\"diocesisId\":\"$DIOCESIS_ID\"}"
 ```
 
 ## Parroquias
@@ -155,10 +157,11 @@ Mismos verbos sobre `/parroquias`. Al crear hace falta `vicariaId`.
 ```json
 {
   "nombre": "Parroquia Centro",
-  "codigo": "PC",
   "vicariaId": "{{vicariaId}}"
 }
 ```
+
+`codigo` es opcional. Si se omite, la BD asigna `{codigo_vicaría}-P001`.
 
 ### Terminal
 
@@ -169,5 +172,5 @@ curl -s "$BASE_URL/parroquias" \
 curl -s -X POST "$BASE_URL/parroquias" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d "{\"nombre\":\"Parroquia Centro\",\"codigo\":\"PC\",\"vicariaId\":\"$VICARIA_ID\"}"
+  -d "{\"nombre\":\"Parroquia Centro\",\"vicariaId\":\"$VICARIA_ID\"}"
 ```
