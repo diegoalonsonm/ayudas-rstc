@@ -160,3 +160,7 @@ COMMENT ON COLUMN ayudas_rstc.vicarias.codigo IS
   'Código interno de control. Lo asigna la BD ({diócesis}-V01) si no se indica.';
 COMMENT ON COLUMN ayudas_rstc.parroquias.codigo IS
   'Código interno de control. Lo asigna la BD ({vicaría}-P001) si no se indica.';
+
+GRANT EXECUTE ON FUNCTION ayudas_rstc.formatear_secuencia(integer, integer) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION ayudas_rstc.siguiente_secuencia_codigo(text[], text) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION ayudas_rstc.asignar_codigo_organizacion() TO authenticated, service_role;

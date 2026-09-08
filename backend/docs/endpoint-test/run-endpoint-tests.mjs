@@ -10,6 +10,8 @@ const LOGIN = {
   correo: process.env.AUTH_CORREO ?? "admin@local.test",
   contrasena: process.env.AUTH_CONTRASENA ?? "Cambiar1234",
 };
+const MISSING_ID = "00000000-0000-0000-0000-000000000000";
+const STAMP = Date.now();
 
 const ctx = {
   tokenAcceso: "",
@@ -17,10 +19,15 @@ const ctx = {
   tipoDocumentoId: "",
   tipoAyudaId: "",
   rolId: "",
+  cantonId: "",
   diocesisId: "",
   vicariaId: "",
   parroquiaId: "",
+  testDiocesisId: "",
+  testVicariaId: "",
+  testParroquiaId: "",
   usuarioId: "",
+  usuarioCreadoId: "",
   personaId: "",
   direccionId: "",
   solicitudId: "",
@@ -29,10 +36,6 @@ const ctx = {
   planId: "",
   detallePlanId: "",
   documentoId: "",
-  createdAyudaThisRun: false,
-  createdDiocesis: false,
-  createdVicaria: false,
-  createdParroquia: false,
 };
 
 const summary = [];
@@ -58,6 +61,10 @@ function pickId(body) {
   if (typeof body.id === "string") return body.id;
   const first = asList(body)[0];
   return first?.id ?? "";
+}
+
+function idOrMissing(value) {
+  return value || MISSING_ID;
 }
 
 function expectedOk(status, expected) {
@@ -98,17 +105,6 @@ async function writeResult(id, payload) {
   summary.push({ id, verdict: payload.verdict, notes: payload.notes ?? "" });
 }
 
-async function writeSkipped(id, reason) {
-  await writeResult(id, {
-    verdict: "skipped",
-    timestamp: new Date().toISOString(),
-    notes: reason,
-    assertions: [],
-    request: "(not sent — skipped by happy-path policy)",
-    response: "(n/a)",
-  });
-}
-
 async function send({
   id,
   method,
@@ -123,18 +119,7 @@ async function send({
 }) {
   const url = `${BASE}${path}`;
   const headers = {};
-  if (auth) {
-    if (!ctx.tokenAcceso) {
-      await writeResult(id, {
-        verdict: "failed entirely",
-        timestamp: new Date().toISOString(),
-        notes: notes ?? "Missing tokenAcceso; prior auth step failed",
-        assertions: [{ ok: false, text: "tokenAcceso available" }],
-        request: `${method} ${url}\nAuthorization: Bearer [REDACTED]`,
-        response: "(not sent)",
-      });
-      return { ok: false, status: 0, body: null };
-    }
+  if (auth && ctx.tokenAcceso) {
     headers.Authorization = `Bearer ${ctx.tokenAcceso}`;
   }
 
@@ -154,6 +139,7 @@ async function send({
     [
       `${method} ${url}`,
       ...Object.entries(headers).map(([k, v]) => `${k}: ${v}`),
+      auth && !ctx.tokenAcceso ? "Authorization: (missing tokenAcceso)" : "",
       json !== undefined ? `\n${JSON.stringify(json, null, 2)}` : "",
       formFile ? `\nmultipart form-data field=${formFile.field} file=${formFile.filename}` : "",
     ]
@@ -192,6 +178,9 @@ async function send({
   const durationMs = Date.now() - started;
   const statusOk = expectedOk(status, expected);
   const assertionResults = [{ ok: statusOk, text: `HTTP ${status} matches expected ${expected.join("|")}` }];
+  if (auth && !ctx.tokenAcceso) {
+    assertionResults.push({ ok: false, text: "tokenAcceso available before authenticated request" });
+  }
   for (const fn of assertions) {
     try {
       const result = fn(parsed, status);
@@ -222,29 +211,28 @@ async function send({
   return { ok: statusOk, status, body: parsed };
 }
 
-const SKIPPED = [
-  ["catalogos-post-cantones", "Fuera del happy path; no mutar catálogos existentes"],
-  ["catalogos-patch-cantones-id", "Fuera del happy path"],
-  ["catalogos-delete-cantones-id", "No DELETE de catálogos existentes"],
-  ["organizacion-patch-diocesis-id", "No PATCH de organización existente"],
-  ["organizacion-delete-diocesis-id", "No DELETE de organización existente"],
-  ["organizacion-patch-vicarias-id", "No PATCH de organización existente"],
-  ["organizacion-delete-vicarias-id", "No DELETE de organización existente"],
-  ["organizacion-patch-parroquias-id", "No PATCH de organización existente"],
-  ["organizacion-delete-parroquias-id", "No DELETE de organización existente"],
-  ["usuarios-post", "Fuera del happy path (alta de identidad Auth)"],
-  ["usuarios-patch-id", "No baja/desactivación de usuarios"],
-  ["usuarios-post-asignaciones", "No reasignación de roles en happy path"],
-  ["solicitudes-post-eliminacion", "Fuera del happy path"],
-  ["solicitudes-post-restauracion", "Fuera del happy path"],
-];
+async function getCatalogo(slug, captureKey) {
+  await send({
+    id: `catalogos-get-${slug}`,
+    method: "GET",
+    path: `/catalogos/${slug}`,
+    expected: ["200"],
+    assertions: [
+      (body, status) => ({
+        ok: status >= 200 && status < 300 && Array.isArray(asList(body)),
+        text: "lista presente",
+      }),
+    ],
+    capture: captureKey
+      ? (body) => {
+          ctx[captureKey] = pickId(body);
+        }
+      : undefined,
+  });
+}
 
 async function main() {
   await mkdir(RESULTS, { recursive: true });
-
-  for (const [id, reason] of SKIPPED) {
-    await writeSkipped(id, reason);
-  }
 
   await send({
     id: "salud-get",
@@ -255,7 +243,7 @@ async function main() {
     assertions: [(body) => ({ ok: body?.estado === "ok", text: "estado === ok" })],
   });
 
-  const login = await send({
+  await send({
     id: "auth-post-sesiones",
     method: "POST",
     path: "/auth/sesiones",
@@ -274,84 +262,17 @@ async function main() {
     },
   });
 
-  if (!login.ok) {
-    const remaining = [
-      "auth-get-sesion",
-      "auth-post-sesiones-renovacion",
-      "catalogos-get-tipos-documento",
-      "catalogos-get-tipos-ayuda",
-      "catalogos-get-roles",
-      "catalogos-get-roles-id",
-      "organizacion-get-diocesis",
-      "organizacion-post-diocesis",
-      "organizacion-get-diocesis-id",
-      "organizacion-get-vicarias",
-      "organizacion-post-vicarias",
-      "organizacion-get-vicarias-id",
-      "organizacion-get-parroquias",
-      "organizacion-post-parroquias",
-      "organizacion-get-parroquias-id",
-      "usuarios-get",
-      "usuarios-get-id",
-      "personas-post",
-      "personas-get",
-      "personas-get-id",
-      "personas-patch-id",
-      "personas-post-busquedas",
-      "personas-post-direcciones",
-      "personas-get-direcciones",
-      "personas-patch-direcciones-id",
-      "solicitudes-post",
-      "solicitudes-get",
-      "solicitudes-get-id",
-      "solicitudes-patch-id",
-      "solicitudes-post-estado-presentada",
-      "solicitudes-get-integrantes",
-      "solicitudes-post-integrantes",
-      "solicitudes-patch-integrantes-id",
-      "solicitudes-get-evaluacion-vivienda",
-      "solicitudes-post-evaluacion-vivienda",
-      "solicitudes-get-ayudas-solicitadas",
-      "solicitudes-post-ayudas-solicitadas",
-      "solicitudes-delete-ayudas-solicitadas-id",
-      "planes-get",
-      "planes-post",
-      "planes-get-detalles",
-      "planes-post-detalles",
-      "planes-get-entregas",
-      "planes-post-entregas",
-      "documentos-get",
-      "documentos-post",
-      "documentos-get-url",
-      "auditoria-get",
-      "auth-delete-sesiones",
-    ];
-    for (const id of remaining) {
-      await writeResult(id, {
-        verdict: "failed entirely",
-        timestamp: new Date().toISOString(),
-        notes: "No ejecutado: POST /auth/sesiones falló (API devolvió error; sin tokenAcceso)",
-        assertions: [{ ok: false, text: "tokenAcceso available" }],
-        request: "(not sent)",
-        response: "(n/a)",
-      });
-    }
-    await writeFile(
-      join(RESULTS, "_summary.md"),
-      buildSummary(
-        "La API en localhost:3000 respondió HTTP 500 (codigo INTERNO) en GET /salud y POST /auth/sesiones. El resto de casos autenticados no se envió.",
-      ),
-    );
-    process.exitCode = 1;
-    return;
-  }
-
   await send({
     id: "auth-get-sesion",
     method: "GET",
     path: "/auth/sesion",
     expected: ["200"],
-    assertions: [(body) => ({ ok: Boolean(body), text: "cuerpo presente" })],
+    assertions: [
+      (body, status) => ({
+        ok: status >= 200 && status < 300 && Boolean(body),
+        text: "cuerpo presente",
+      }),
+    ],
     capture: (body) => {
       ctx.usuarioId = body.usuario?.id ?? body.usuarioId ?? body.id ?? ctx.usuarioId;
     },
@@ -362,7 +283,7 @@ async function main() {
     method: "POST",
     path: "/auth/sesiones/renovacion",
     auth: false,
-    json: { tokenRenovacion: ctx.tokenRenovacion },
+    json: { tokenRenovacion: ctx.tokenRenovacion || "token-renovacion-ausente" },
     expected: ["200", "201"],
     assertions: [
       (body) => ({ ok: Boolean(body?.tokenAcceso), text: "tokenAcceso presente" }),
@@ -372,61 +293,65 @@ async function main() {
       ctx.tokenAcceso = body.tokenAcceso;
       ctx.tokenRenovacion = body.tokenRenovacion;
     },
+    notes: ctx.tokenRenovacion ? undefined : "tokenRenovacion no capturado; se envía placeholder",
+  });
+
+  await getCatalogo("tipos-documento", "tipoDocumentoId");
+  await getCatalogo("sexos");
+  await getCatalogo("grados-academicos");
+  await getCatalogo("parentescos");
+  await getCatalogo("rangos-ingreso");
+  await getCatalogo("tipos-vivienda");
+  await getCatalogo("tipos-tenencia");
+  await getCatalogo("condiciones-vivienda");
+  await getCatalogo("tipos-ayuda", "tipoAyudaId");
+  await getCatalogo("roles", "rolId");
+  await getCatalogo("cantones");
+  await getCatalogo("distritos");
+  await getCatalogo("barrios");
+
+  await send({
+    id: "catalogos-get-roles-id",
+    method: "GET",
+    path: `/catalogos/roles/${idOrMissing(ctx.rolId)}`,
+    expected: ["200"],
+    assertions: [
+      (body, status) => ({
+        ok: status >= 200 && status < 300 && Boolean(body),
+        text: "objeto de rol",
+      }),
+    ],
+    notes: ctx.rolId ? undefined : "rolId no capturado; se usa UUID placeholder",
+  });
+
+  const cantonCodigo = `T${String(STAMP).slice(-5)}`;
+  await send({
+    id: "catalogos-post-cantones",
+    method: "POST",
+    path: "/catalogos/cantones",
+    json: { codigo: cantonCodigo, nombre: `Canton TEST ${STAMP}` },
+    expected: ["200", "201"],
+    capture: (body) => {
+      ctx.cantonId = pickId(body);
+    },
+  });
+  await send({
+    id: "catalogos-patch-cantones-id",
+    method: "PATCH",
+    path: `/catalogos/cantones/${idOrMissing(ctx.cantonId)}`,
+    json: { nombre: `Canton TEST ${STAMP} actualizado` },
+    expected: ["200"],
+    notes: ctx.cantonId ? undefined : "cantonId no capturado; se usa UUID placeholder",
+  });
+  await send({
+    id: "catalogos-delete-cantones-id",
+    method: "DELETE",
+    path: `/catalogos/cantones/${idOrMissing(ctx.cantonId)}`,
+    json: { motivo: "Fila de prueba endpoint-test" },
+    expected: ["200", "204"],
   });
 
   await send({
-    id: "catalogos-get-tipos-documento",
-    method: "GET",
-    path: "/catalogos/tipos-documento",
-    expected: ["200"],
-    assertions: [(body) => ({ ok: Array.isArray(asList(body)), text: "lista presente" })],
-    capture: (body) => {
-      ctx.tipoDocumentoId = pickId(body);
-    },
-  });
-
-  await send({
-    id: "catalogos-get-tipos-ayuda",
-    method: "GET",
-    path: "/catalogos/tipos-ayuda",
-    expected: ["200"],
-    assertions: [(body) => ({ ok: Array.isArray(asList(body)), text: "lista presente" })],
-    capture: (body) => {
-      ctx.tipoAyudaId = pickId(body);
-    },
-  });
-
-  await send({
-    id: "catalogos-get-roles",
-    method: "GET",
-    path: "/catalogos/roles",
-    expected: ["200"],
-    assertions: [(body) => ({ ok: Array.isArray(asList(body)), text: "lista presente" })],
-    capture: (body) => {
-      ctx.rolId = pickId(body);
-    },
-  });
-
-  if (ctx.rolId) {
-    await send({
-      id: "catalogos-get-roles-id",
-      method: "GET",
-      path: `/catalogos/roles/${ctx.rolId}`,
-      expected: ["200"],
-      assertions: [(body) => ({ ok: body?.id === ctx.rolId || Boolean(body), text: "objeto de rol" })],
-    });
-  } else {
-    await writeResult("catalogos-get-roles-id", {
-      verdict: "failed entirely",
-      timestamp: new Date().toISOString(),
-      notes: "No rolId captured from GET /catalogos/roles",
-      assertions: [{ ok: false, text: "rolId available" }],
-      request: "(not sent)",
-      response: "(n/a)",
-    });
-  }
-
-  const diocesis = await send({
     id: "organizacion-get-diocesis",
     method: "GET",
     path: "/diocesis",
@@ -435,41 +360,32 @@ async function main() {
       ctx.diocesisId = pickId(body);
     },
   });
-  if (diocesis.ok && asList(diocesis.body).length === 0) {
-    await send({
-      id: "organizacion-post-diocesis",
-      method: "POST",
-      path: "/diocesis",
-      json: { nombre: "Diócesis TEST Endpoint", codigo: `TEST-DIO-${Date.now()}` },
-      expected: ["200", "201"],
-      capture: (body) => {
-        ctx.diocesisId = pickId(body);
-        ctx.createdDiocesis = Boolean(ctx.diocesisId);
-      },
-    });
-  } else {
-    await writeSkipped("organizacion-post-diocesis", "GET /diocesis ya tenía filas; no se crea árbol TEST");
-  }
+  await send({
+    id: "organizacion-post-diocesis",
+    method: "POST",
+    path: "/diocesis",
+    json: { nombre: `Diócesis TEST ${STAMP}` },
+    expected: ["200", "201"],
+    capture: (body) => {
+      ctx.testDiocesisId = pickId(body);
+      if (!ctx.diocesisId) ctx.diocesisId = ctx.testDiocesisId;
+    },
+  });
+  await send({
+    id: "organizacion-get-diocesis-id",
+    method: "GET",
+    path: `/diocesis/${idOrMissing(ctx.testDiocesisId || ctx.diocesisId)}`,
+    expected: ["200"],
+  });
+  await send({
+    id: "organizacion-patch-diocesis-id",
+    method: "PATCH",
+    path: `/diocesis/${idOrMissing(ctx.testDiocesisId || ctx.diocesisId)}`,
+    json: { nombre: `Diócesis TEST ${STAMP} actualizado` },
+    expected: ["200"],
+  });
 
-  if (ctx.diocesisId) {
-    await send({
-      id: "organizacion-get-diocesis-id",
-      method: "GET",
-      path: `/diocesis/${ctx.diocesisId}`,
-      expected: ["200"],
-    });
-  } else {
-    await writeResult("organizacion-get-diocesis-id", {
-      verdict: "failed entirely",
-      timestamp: new Date().toISOString(),
-      notes: "No diocesisId",
-      assertions: [{ ok: false, text: "diocesisId available" }],
-      request: "(not sent)",
-      response: "(n/a)",
-    });
-  }
-
-  const vicarias = await send({
+  await send({
     id: "organizacion-get-vicarias",
     method: "GET",
     path: "/vicarias",
@@ -478,44 +394,35 @@ async function main() {
       ctx.vicariaId = pickId(body);
     },
   });
-  if (vicarias.ok && asList(vicarias.body).length === 0 && ctx.diocesisId) {
-    await send({
-      id: "organizacion-post-vicarias",
-      method: "POST",
-      path: "/vicarias",
-      json: { nombre: "Vicaría TEST Endpoint", codigo: `TEST-VIC-${Date.now()}`, diocesisId: ctx.diocesisId },
-      expected: ["200", "201"],
-      capture: (body) => {
-        ctx.vicariaId = pickId(body);
-        ctx.createdVicaria = Boolean(ctx.vicariaId);
-      },
-    });
-  } else {
-    await writeSkipped(
-      "organizacion-post-vicarias",
-      asList(vicarias.body).length ? "GET /vicarias ya tenía filas" : "Sin diocesisId para crear vicaría",
-    );
-  }
+  await send({
+    id: "organizacion-post-vicarias",
+    method: "POST",
+    path: "/vicarias",
+    json: {
+      nombre: `Vicaría TEST ${STAMP}`,
+      diocesisId: idOrMissing(ctx.testDiocesisId || ctx.diocesisId),
+    },
+    expected: ["200", "201"],
+    capture: (body) => {
+      ctx.testVicariaId = pickId(body);
+      if (!ctx.vicariaId) ctx.vicariaId = ctx.testVicariaId;
+    },
+  });
+  await send({
+    id: "organizacion-get-vicarias-id",
+    method: "GET",
+    path: `/vicarias/${idOrMissing(ctx.testVicariaId || ctx.vicariaId)}`,
+    expected: ["200"],
+  });
+  await send({
+    id: "organizacion-patch-vicarias-id",
+    method: "PATCH",
+    path: `/vicarias/${idOrMissing(ctx.testVicariaId || ctx.vicariaId)}`,
+    json: { nombre: `Vicaría TEST ${STAMP} actualizado` },
+    expected: ["200"],
+  });
 
-  if (ctx.vicariaId) {
-    await send({
-      id: "organizacion-get-vicarias-id",
-      method: "GET",
-      path: `/vicarias/${ctx.vicariaId}`,
-      expected: ["200"],
-    });
-  } else {
-    await writeResult("organizacion-get-vicarias-id", {
-      verdict: "failed entirely",
-      timestamp: new Date().toISOString(),
-      notes: "No vicariaId",
-      assertions: [{ ok: false, text: "vicariaId available" }],
-      request: "(not sent)",
-      response: "(n/a)",
-    });
-  }
-
-  const parroquias = await send({
+  await send({
     id: "organizacion-get-parroquias",
     method: "GET",
     path: "/parroquias",
@@ -524,42 +431,33 @@ async function main() {
       ctx.parroquiaId = pickId(body);
     },
   });
-  if (parroquias.ok && asList(parroquias.body).length === 0 && ctx.vicariaId) {
-    await send({
-      id: "organizacion-post-parroquias",
-      method: "POST",
-      path: "/parroquias",
-      json: { nombre: "Parroquia TEST Endpoint", codigo: `TEST-PAR-${Date.now()}`, vicariaId: ctx.vicariaId },
-      expected: ["200", "201"],
-      capture: (body) => {
-        ctx.parroquiaId = pickId(body);
-        ctx.createdParroquia = Boolean(ctx.parroquiaId);
-      },
-    });
-  } else {
-    await writeSkipped(
-      "organizacion-post-parroquias",
-      asList(parroquias.body).length ? "GET /parroquias ya tenía filas" : "Sin vicariaId para crear parroquia",
-    );
-  }
-
-  if (ctx.parroquiaId) {
-    await send({
-      id: "organizacion-get-parroquias-id",
-      method: "GET",
-      path: `/parroquias/${ctx.parroquiaId}`,
-      expected: ["200"],
-    });
-  } else {
-    await writeResult("organizacion-get-parroquias-id", {
-      verdict: "failed entirely",
-      timestamp: new Date().toISOString(),
-      notes: "No parroquiaId",
-      assertions: [{ ok: false, text: "parroquiaId available" }],
-      request: "(not sent)",
-      response: "(n/a)",
-    });
-  }
+  await send({
+    id: "organizacion-post-parroquias",
+    method: "POST",
+    path: "/parroquias",
+    json: {
+      nombre: `Parroquia TEST ${STAMP}`,
+      vicariaId: idOrMissing(ctx.testVicariaId || ctx.vicariaId),
+    },
+    expected: ["200", "201"],
+    capture: (body) => {
+      ctx.testParroquiaId = pickId(body);
+      if (!ctx.parroquiaId) ctx.parroquiaId = ctx.testParroquiaId;
+    },
+  });
+  await send({
+    id: "organizacion-get-parroquias-id",
+    method: "GET",
+    path: `/parroquias/${idOrMissing(ctx.testParroquiaId || ctx.parroquiaId)}`,
+    expected: ["200"],
+  });
+  await send({
+    id: "organizacion-patch-parroquias-id",
+    method: "PATCH",
+    path: `/parroquias/${idOrMissing(ctx.testParroquiaId || ctx.parroquiaId)}`,
+    json: { nombre: `Parroquia TEST ${STAMP} actualizado` },
+    expected: ["200"],
+  });
 
   await send({
     id: "usuarios-get",
@@ -570,29 +468,71 @@ async function main() {
       if (!ctx.usuarioId) ctx.usuarioId = pickId(body);
     },
   });
-
-  if (ctx.usuarioId) {
+  await send({
+    id: "usuarios-get-id",
+    method: "GET",
+    path: `/usuarios/${idOrMissing(ctx.usuarioId)}`,
+    expected: ["200"],
+  });
+  await send({
+    id: "usuarios-post",
+    method: "POST",
+    path: "/usuarios",
+    json: {
+      nombreCompleto: `Usuario TEST ${STAMP}`,
+      correo: `endpoint.test.${STAMP}@local.test`,
+      contrasena: "Cambiar1234",
+      rolCodigo: "PERSONAL_PASTORAL",
+      parroquiaId: idOrMissing(ctx.testParroquiaId || ctx.parroquiaId),
+      motivo: "Alta de prueba endpoint-test",
+    },
+    expected: ["200", "201"],
+    capture: (body) => {
+      ctx.usuarioCreadoId = pickId(body);
+    },
+  });
+  const usuarioMutacion = ctx.usuarioCreadoId || ctx.usuarioId;
+  await send({
+    id: "usuarios-patch-id",
+    method: "PATCH",
+    path: `/usuarios/${idOrMissing(usuarioMutacion)}`,
+    json: { activo: false, motivo: "Baja temporal de prueba endpoint-test" },
+    expected: ["200"],
+    notes: ctx.usuarioCreadoId
+      ? "PATCH sobre usuario creado en esta corrida"
+      : "PATCH sobre usuario de sesión (no se pudo crear uno de prueba)",
+  });
+  if (ctx.usuarioCreadoId) {
     await send({
-      id: "usuarios-get-id",
-      method: "GET",
-      path: `/usuarios/${ctx.usuarioId}`,
-      expected: ["200"],
+      id: "usuarios-post-asignaciones",
+      method: "POST",
+      path: `/usuarios/${ctx.usuarioCreadoId}/asignaciones`,
+      json: {
+        rolCodigo: "COORDINADOR_PARROQUIAL",
+        parroquiaId: idOrMissing(ctx.testParroquiaId || ctx.parroquiaId),
+        motivo: "Promoción de prueba endpoint-test",
+      },
+      expected: ["200", "201"],
     });
   } else {
-    await writeResult("usuarios-get-id", {
-      verdict: "failed entirely",
-      timestamp: new Date().toISOString(),
-      notes: "No usuarioId",
-      assertions: [{ ok: false, text: "usuarioId available" }],
-      request: "(not sent)",
-      response: "(n/a)",
+    await send({
+      id: "usuarios-post-asignaciones",
+      method: "POST",
+      path: `/usuarios/${idOrMissing(ctx.usuarioId)}/asignaciones`,
+      json: {
+        rolCodigo: "COORDINADOR_PARROQUIAL",
+        parroquiaId: idOrMissing(ctx.testParroquiaId || ctx.parroquiaId),
+        motivo: "Promoción de prueba endpoint-test",
+      },
+      expected: ["200", "201"],
+      notes: "Sin usuario creado; se intenta contra usuario de sesión (puede fallar por autoasignación)",
     });
   }
 
   const personaBody = {
     primerNombre: "María",
     primerApellido: "Solano",
-    numeroDocumento: "1-2345-6789",
+    numeroDocumento: `1-2345-${String(STAMP).slice(-4)}`,
     telefono: "88881111",
   };
   if (ctx.tipoDocumentoId) personaBody.tipoDocumentoId = ctx.tipoDocumentoId;
@@ -608,120 +548,59 @@ async function main() {
       ctx.personaId = pickId(body);
     },
   });
-
   await send({
     id: "personas-get",
     method: "GET",
     path: "/personas",
     expected: ["200"],
   });
-
-  if (ctx.personaId) {
-    await send({
-      id: "personas-get-id",
-      method: "GET",
-      path: `/personas/${ctx.personaId}`,
-      expected: ["200"],
-    });
-    await send({
-      id: "personas-patch-id",
-      method: "PATCH",
-      path: `/personas/${ctx.personaId}`,
-      json: { segundoNombre: "Elena", telefono: "88882222" },
-      expected: ["200"],
-    });
-  } else {
-    await writeResult("personas-get-id", {
-      verdict: "failed entirely",
-      timestamp: new Date().toISOString(),
-      notes: "No personaId",
-      assertions: [{ ok: false, text: "personaId available" }],
-      request: "(not sent)",
-      response: "(n/a)",
-    });
-    await writeResult("personas-patch-id", {
-      verdict: "failed entirely",
-      timestamp: new Date().toISOString(),
-      notes: "No personaId",
-      assertions: [{ ok: false, text: "personaId available" }],
-      request: "(not sent)",
-      response: "(n/a)",
-    });
-  }
-
+  await send({
+    id: "personas-get-id",
+    method: "GET",
+    path: `/personas/${idOrMissing(ctx.personaId)}`,
+    expected: ["200"],
+  });
+  await send({
+    id: "personas-patch-id",
+    method: "PATCH",
+    path: `/personas/${idOrMissing(ctx.personaId)}`,
+    json: { segundoNombre: "Elena", telefono: "88882222" },
+    expected: ["200"],
+  });
   await send({
     id: "personas-post-busquedas",
     method: "POST",
     path: "/personas/busquedas",
-    json: { numeroDocumento: "1-2345-6789" },
+    json: { numeroDocumento: personaBody.numeroDocumento },
+    expected: ["200"],
+  });
+  await send({
+    id: "personas-post-direcciones",
+    method: "POST",
+    path: `/personas/${idOrMissing(ctx.personaId)}/direcciones`,
+    json: { senas: "100 m sur de la iglesia", esActual: true, vigenteDesde: "2026-09-07" },
+    expected: ["200", "201"],
+    capture: (body) => {
+      ctx.direccionId = pickId(body);
+    },
+  });
+  await send({
+    id: "personas-get-direcciones",
+    method: "GET",
+    path: `/personas/${idOrMissing(ctx.personaId)}/direcciones`,
+    expected: ["200"],
+  });
+  await send({
+    id: "personas-patch-direcciones-id",
+    method: "PATCH",
+    path: `/personas/${idOrMissing(ctx.personaId)}/direcciones/${idOrMissing(ctx.direccionId)}`,
+    json: { esActual: false, vigenteHasta: "2026-09-07" },
     expected: ["200"],
   });
 
-  if (ctx.personaId) {
-    await send({
-      id: "personas-post-direcciones",
-      method: "POST",
-      path: `/personas/${ctx.personaId}/direcciones`,
-      json: { senas: "100 m sur de la iglesia", esActual: true, vigenteDesde: "2026-09-07" },
-      expected: ["200", "201"],
-      capture: (body) => {
-        ctx.direccionId = pickId(body);
-      },
-    });
-    await send({
-      id: "personas-get-direcciones",
-      method: "GET",
-      path: `/personas/${ctx.personaId}/direcciones`,
-      expected: ["200"],
-    });
-    if (ctx.direccionId) {
-      await send({
-        id: "personas-patch-direcciones-id",
-        method: "PATCH",
-        path: `/personas/${ctx.personaId}/direcciones/${ctx.direccionId}`,
-        json: { esActual: false, vigenteHasta: "2026-09-07" },
-        expected: ["200"],
-      });
-    } else {
-      await writeResult("personas-patch-direcciones-id", {
-        verdict: "failed entirely",
-        timestamp: new Date().toISOString(),
-        notes: "No direccionId",
-        assertions: [{ ok: false, text: "direccionId available" }],
-        request: "(not sent)",
-        response: "(n/a)",
-      });
-    }
-  } else {
-    await writeResult("personas-post-direcciones", {
-      verdict: "failed entirely",
-      timestamp: new Date().toISOString(),
-      notes: "No personaId",
-      assertions: [{ ok: false, text: "personaId available" }],
-      request: "(not sent)",
-      response: "(n/a)",
-    });
-    await writeResult("personas-get-direcciones", {
-      verdict: "failed entirely",
-      timestamp: new Date().toISOString(),
-      notes: "No personaId",
-      assertions: [{ ok: false, text: "personaId available" }],
-      request: "(not sent)",
-      response: "(n/a)",
-    });
-    await writeResult("personas-patch-direcciones-id", {
-      verdict: "failed entirely",
-      timestamp: new Date().toISOString(),
-      notes: "No personaId",
-      assertions: [{ ok: false, text: "personaId available" }],
-      request: "(not sent)",
-      response: "(n/a)",
-    });
-  }
-
   const solicitudJson = {
-    personaSolicitanteId: ctx.personaId,
-    parroquiaReceptoraId: ctx.parroquiaId,
+    personaSolicitanteId: idOrMissing(ctx.personaId),
+    parroquiaReceptoraId: idOrMissing(ctx.testParroquiaId || ctx.parroquiaId),
     sectorOficial: "Barrio Centro",
     estado: "BORRADOR",
   };
@@ -737,299 +616,172 @@ async function main() {
       ctx.solicitudId = pickId(body);
     },
   });
-
   await send({
     id: "solicitudes-get",
     method: "GET",
     path: "/solicitudes-ayuda",
     expected: ["200"],
   });
+  await send({
+    id: "solicitudes-get-id",
+    method: "GET",
+    path: `/solicitudes-ayuda/${idOrMissing(ctx.solicitudId)}`,
+    expected: ["200"],
+  });
+  await send({
+    id: "solicitudes-patch-id",
+    method: "PATCH",
+    path: `/solicitudes-ayuda/${idOrMissing(ctx.solicitudId)}`,
+    json: { fechaEntrevista: "2026-09-07", observaciones: "Visita domiciliaria pendiente" },
+    expected: ["200"],
+  });
+  await send({
+    id: "solicitudes-post-estado-presentada",
+    method: "POST",
+    path: `/solicitudes-ayuda/${idOrMissing(ctx.solicitudId)}/estado`,
+    json: { estadoNuevo: "PRESENTADA", motivo: "Entrevista completa" },
+    expected: ["200"],
+  });
+  await send({
+    id: "solicitudes-get-integrantes",
+    method: "GET",
+    path: `/solicitudes-ayuda/${idOrMissing(ctx.solicitudId)}/integrantes`,
+    expected: ["200"],
+  });
+  await send({
+    id: "solicitudes-post-integrantes",
+    method: "POST",
+    path: `/solicitudes-ayuda/${idOrMissing(ctx.solicitudId)}/integrantes`,
+    json: { nombreCompleto: "Juan Solano", ocupacion: "Jornalero" },
+    expected: ["200", "201"],
+    capture: (body) => {
+      ctx.integranteId = pickId(body);
+    },
+  });
+  await send({
+    id: "solicitudes-patch-integrantes-id",
+    method: "PATCH",
+    path: `/solicitudes-ayuda/${idOrMissing(ctx.solicitudId)}/integrantes/${idOrMissing(ctx.integranteId)}`,
+    json: { ocupacion: "Jornalero (actualizado)" },
+    expected: ["200"],
+  });
+  await send({
+    id: "solicitudes-get-evaluacion-vivienda",
+    method: "GET",
+    path: `/solicitudes-ayuda/${idOrMissing(ctx.solicitudId)}/evaluacion-vivienda`,
+    expected: ["200"],
+  });
+  await send({
+    id: "solicitudes-post-evaluacion-vivienda",
+    method: "POST",
+    path: `/solicitudes-ayuda/${idOrMissing(ctx.solicitudId)}/evaluacion-vivienda`,
+    json: { observaciones: "Techo de zinc" },
+    expected: ["200", "201"],
+  });
+  await send({
+    id: "solicitudes-get-ayudas-solicitadas",
+    method: "GET",
+    path: `/solicitudes-ayuda/${idOrMissing(ctx.solicitudId)}/ayudas-solicitadas`,
+    expected: ["200"],
+  });
+  await send({
+    id: "solicitudes-post-ayudas-solicitadas",
+    method: "POST",
+    path: `/solicitudes-ayuda/${idOrMissing(ctx.solicitudId)}/ayudas-solicitadas`,
+    json: { tipoAyudaId: ctx.tipoAyudaId || MISSING_ID, detalle: null },
+    expected: ["200", "201"],
+    capture: (body) => {
+      ctx.ayudaId = pickId(body);
+    },
+  });
+  await send({
+    id: "solicitudes-delete-ayudas-solicitadas-id",
+    method: "DELETE",
+    path: `/solicitudes-ayuda/${idOrMissing(ctx.solicitudId)}/ayudas-solicitadas/${idOrMissing(ctx.ayudaId)}`,
+    json: { motivo: "Selección incorrecta (fila de prueba)" },
+    expected: ["200", "204"],
+  });
 
-  if (ctx.solicitudId) {
-    await send({
-      id: "solicitudes-get-id",
-      method: "GET",
-      path: `/solicitudes-ayuda/${ctx.solicitudId}`,
-      expected: ["200"],
-    });
-    await send({
-      id: "solicitudes-patch-id",
-      method: "PATCH",
-      path: `/solicitudes-ayuda/${ctx.solicitudId}`,
-      json: { fechaEntrevista: "2026-09-07", observaciones: "Visita domiciliaria pendiente" },
-      expected: ["200"],
-    });
-    await send({
-      id: "solicitudes-post-estado-presentada",
-      method: "POST",
-      path: `/solicitudes-ayuda/${ctx.solicitudId}/estado`,
-      json: { estadoNuevo: "PRESENTADA", motivo: "Entrevista completa" },
-      expected: ["200"],
-    });
-    await send({
-      id: "solicitudes-get-integrantes",
-      method: "GET",
-      path: `/solicitudes-ayuda/${ctx.solicitudId}/integrantes`,
-      expected: ["200"],
-    });
-    await send({
-      id: "solicitudes-post-integrantes",
-      method: "POST",
-      path: `/solicitudes-ayuda/${ctx.solicitudId}/integrantes`,
-      json: { nombreCompleto: "Juan Solano", ocupacion: "Jornalero" },
-      expected: ["200", "201"],
-      capture: (body) => {
-        ctx.integranteId = pickId(body);
-      },
-    });
-    if (ctx.integranteId) {
-      await send({
-        id: "solicitudes-patch-integrantes-id",
-        method: "PATCH",
-        path: `/solicitudes-ayuda/${ctx.solicitudId}/integrantes/${ctx.integranteId}`,
-        json: { ocupacion: "Jornalero (actualizado)" },
-        expected: ["200"],
-      });
-    } else {
-      await writeResult("solicitudes-patch-integrantes-id", {
-        verdict: "failed entirely",
-        timestamp: new Date().toISOString(),
-        notes: "No integranteId",
-        assertions: [{ ok: false, text: "integranteId available" }],
-        request: "(not sent)",
-        response: "(n/a)",
-      });
-    }
-    await send({
-      id: "solicitudes-get-evaluacion-vivienda",
-      method: "GET",
-      path: `/solicitudes-ayuda/${ctx.solicitudId}/evaluacion-vivienda`,
-      expected: ["200"],
-    });
-    await send({
-      id: "solicitudes-post-evaluacion-vivienda",
-      method: "POST",
-      path: `/solicitudes-ayuda/${ctx.solicitudId}/evaluacion-vivienda`,
-      json: { observaciones: "Techo de zinc" },
-      expected: ["200", "201"],
-    });
-    await send({
-      id: "solicitudes-get-ayudas-solicitadas",
-      method: "GET",
-      path: `/solicitudes-ayuda/${ctx.solicitudId}/ayudas-solicitadas`,
-      expected: ["200"],
-    });
-    if (ctx.tipoAyudaId) {
-      const ayuda = await send({
-        id: "solicitudes-post-ayudas-solicitadas",
-        method: "POST",
-        path: `/solicitudes-ayuda/${ctx.solicitudId}/ayudas-solicitadas`,
-        json: { tipoAyudaId: ctx.tipoAyudaId, detalle: null },
-        expected: ["200", "201"],
-        capture: (body) => {
-          ctx.ayudaId = pickId(body);
-          ctx.createdAyudaThisRun = Boolean(ctx.ayudaId);
-        },
-      });
-      if (ayuda.ok && ctx.createdAyudaThisRun) {
-        await send({
-          id: "solicitudes-delete-ayudas-solicitadas-id",
-          method: "DELETE",
-          path: `/solicitudes-ayuda/${ctx.solicitudId}/ayudas-solicitadas/${ctx.ayudaId}`,
-          json: { motivo: "Selección incorrecta (fila de prueba)" },
-          expected: ["200", "204"],
-        });
-      } else {
-        await writeSkipped("solicitudes-delete-ayudas-solicitadas-id", "No se creó ayudaId en esta corrida");
-      }
-    } else {
-      await writeResult("solicitudes-post-ayudas-solicitadas", {
-        verdict: "failed entirely",
-        timestamp: new Date().toISOString(),
-        notes: "No tipoAyudaId",
-        assertions: [{ ok: false, text: "tipoAyudaId available" }],
-        request: "(not sent)",
-        response: "(n/a)",
-      });
-      await writeSkipped("solicitudes-delete-ayudas-solicitadas-id", "No se creó ayudaId en esta corrida");
-    }
+  await send({
+    id: "planes-get",
+    method: "GET",
+    path: `/solicitudes-ayuda/${idOrMissing(ctx.solicitudId)}/planes-ayuda`,
+    expected: ["200"],
+  });
+  await send({
+    id: "planes-post",
+    method: "POST",
+    path: `/solicitudes-ayuda/${idOrMissing(ctx.solicitudId)}/planes-ayuda`,
+    json: {
+      decision: "APROBADA",
+      fechaInicio: "2026-09-01",
+      fechaFin: "2026-12-01",
+      motivoDecision: "Comité parroquial",
+    },
+    expected: ["200", "201"],
+    capture: (body) => {
+      ctx.planId = pickId(body);
+    },
+  });
+  await send({
+    id: "planes-get-detalles",
+    method: "GET",
+    path: `/planes-ayuda/${idOrMissing(ctx.planId)}/detalles`,
+    expected: ["200"],
+  });
+  const detalleJson = { frecuencia: "MENSUAL", montoEstimado: 25000 };
+  if (ctx.tipoAyudaId) detalleJson.tipoAyudaId = ctx.tipoAyudaId;
+  else detalleJson.tipoAyudaId = MISSING_ID;
+  await send({
+    id: "planes-post-detalles",
+    method: "POST",
+    path: `/planes-ayuda/${idOrMissing(ctx.planId)}/detalles`,
+    json: detalleJson,
+    expected: ["200", "201"],
+    capture: (body) => {
+      ctx.detallePlanId = pickId(body);
+    },
+  });
+  await send({
+    id: "planes-get-entregas",
+    method: "GET",
+    path: `/detalles-plan-ayuda/${idOrMissing(ctx.detallePlanId)}/entregas`,
+    expected: ["200"],
+  });
+  await send({
+    id: "planes-post-entregas",
+    method: "POST",
+    path: `/detalles-plan-ayuda/${idOrMissing(ctx.detallePlanId)}/entregas`,
+    json: { fechaEntrega: "2026-09-15", monto: 25000, descripcion: "Paquete de alimentos" },
+    expected: ["200", "201"],
+  });
 
-    await send({
-      id: "planes-get",
-      method: "GET",
-      path: `/solicitudes-ayuda/${ctx.solicitudId}/planes-ayuda`,
-      expected: ["200"],
-    });
-    await send({
-      id: "planes-post",
-      method: "POST",
-      path: `/solicitudes-ayuda/${ctx.solicitudId}/planes-ayuda`,
-      json: {
-        decision: "APROBADA",
-        fechaInicio: "2026-09-01",
-        fechaFin: "2026-12-01",
-        motivoDecision: "Comité parroquial",
-      },
-      expected: ["200", "201"],
-      capture: (body) => {
-        ctx.planId = pickId(body);
-      },
-    });
-  } else {
-    for (const id of [
-      "solicitudes-get-id",
-      "solicitudes-patch-id",
-      "solicitudes-post-estado-presentada",
-      "solicitudes-get-integrantes",
-      "solicitudes-post-integrantes",
-      "solicitudes-patch-integrantes-id",
-      "solicitudes-get-evaluacion-vivienda",
-      "solicitudes-post-evaluacion-vivienda",
-      "solicitudes-get-ayudas-solicitadas",
-      "solicitudes-post-ayudas-solicitadas",
-      "planes-get",
-      "planes-post",
-    ]) {
-      await writeResult(id, {
-        verdict: "failed entirely",
-        timestamp: new Date().toISOString(),
-        notes: "No solicitudId",
-        assertions: [{ ok: false, text: "solicitudId available" }],
-        request: "(not sent)",
-        response: "(n/a)",
-      });
-    }
-    await writeSkipped("solicitudes-delete-ayudas-solicitadas-id", "No solicitudId");
-  }
-
-  if (ctx.planId) {
-    await send({
-      id: "planes-get-detalles",
-      method: "GET",
-      path: `/planes-ayuda/${ctx.planId}/detalles`,
-      expected: ["200"],
-    });
-    const detalleJson = { frecuencia: "MENSUAL", montoEstimado: 25000 };
-    if (ctx.tipoAyudaId) detalleJson.tipoAyudaId = ctx.tipoAyudaId;
-    await send({
-      id: "planes-post-detalles",
-      method: "POST",
-      path: `/planes-ayuda/${ctx.planId}/detalles`,
-      json: detalleJson,
-      expected: ["200", "201"],
-      capture: (body) => {
-        ctx.detallePlanId = pickId(body);
-      },
-    });
-  } else {
-    await writeResult("planes-get-detalles", {
-      verdict: "failed entirely",
-      timestamp: new Date().toISOString(),
-      notes: "No planId",
-      assertions: [{ ok: false, text: "planId available" }],
-      request: "(not sent)",
-      response: "(n/a)",
-    });
-    await writeResult("planes-post-detalles", {
-      verdict: "failed entirely",
-      timestamp: new Date().toISOString(),
-      notes: "No planId",
-      assertions: [{ ok: false, text: "planId available" }],
-      request: "(not sent)",
-      response: "(n/a)",
-    });
-  }
-
-  if (ctx.detallePlanId) {
-    await send({
-      id: "planes-get-entregas",
-      method: "GET",
-      path: `/detalles-plan-ayuda/${ctx.detallePlanId}/entregas`,
-      expected: ["200"],
-    });
-    await send({
-      id: "planes-post-entregas",
-      method: "POST",
-      path: `/detalles-plan-ayuda/${ctx.detallePlanId}/entregas`,
-      json: { fechaEntrega: "2026-09-15", monto: 25000, descripcion: "Paquete de alimentos" },
-      expected: ["200", "201"],
-    });
-  } else {
-    await writeResult("planes-get-entregas", {
-      verdict: "failed entirely",
-      timestamp: new Date().toISOString(),
-      notes: "No detallePlanId",
-      assertions: [{ ok: false, text: "detallePlanId available" }],
-      request: "(not sent)",
-      response: "(n/a)",
-    });
-    await writeResult("planes-post-entregas", {
-      verdict: "failed entirely",
-      timestamp: new Date().toISOString(),
-      notes: "No detallePlanId",
-      assertions: [{ ok: false, text: "detallePlanId available" }],
-      request: "(not sent)",
-      response: "(n/a)",
-    });
-  }
-
-  if (ctx.solicitudId) {
-    await send({
-      id: "documentos-get",
-      method: "GET",
-      path: `/solicitudes-ayuda/${ctx.solicitudId}/documentos-consentimiento`,
-      expected: ["200"],
-    });
-    await send({
-      id: "documentos-post",
-      method: "POST",
-      path: `/solicitudes-ayuda/${ctx.solicitudId}/documentos-consentimiento?fechaFirma=2026-09-07`,
-      formFile: { field: "archivo", path: FIXTURE_PDF, filename: "consentimiento-prueba.pdf" },
-      expected: ["200", "201"],
-      capture: (body) => {
-        ctx.documentoId = pickId(body);
-      },
-    });
-  } else {
-    await writeResult("documentos-get", {
-      verdict: "failed entirely",
-      timestamp: new Date().toISOString(),
-      notes: "No solicitudId",
-      assertions: [{ ok: false, text: "solicitudId available" }],
-      request: "(not sent)",
-      response: "(n/a)",
-    });
-    await writeResult("documentos-post", {
-      verdict: "failed entirely",
-      timestamp: new Date().toISOString(),
-      notes: "No solicitudId",
-      assertions: [{ ok: false, text: "solicitudId available" }],
-      request: "(not sent)",
-      response: "(n/a)",
-    });
-  }
-
-  if (ctx.documentoId) {
-    await send({
-      id: "documentos-get-url",
-      method: "GET",
-      path: `/documentos-consentimiento/${ctx.documentoId}/url`,
-      expected: ["200"],
-      assertions: [
-        (body) => ({ ok: Boolean(body?.urlFirmada), text: "urlFirmada presente" }),
-        (body) => ({ ok: body?.expiraEnSegundos != null, text: "expiraEnSegundos presente" }),
-      ],
-    });
-  } else {
-    await writeResult("documentos-get-url", {
-      verdict: "failed entirely",
-      timestamp: new Date().toISOString(),
-      notes: "No documentoId (upload failed or skipped)",
-      assertions: [{ ok: false, text: "documentoId available" }],
-      request: "(not sent)",
-      response: "(n/a)",
-    });
-  }
+  await send({
+    id: "documentos-get",
+    method: "GET",
+    path: `/solicitudes-ayuda/${idOrMissing(ctx.solicitudId)}/documentos-consentimiento`,
+    expected: ["200"],
+  });
+  await send({
+    id: "documentos-post",
+    method: "POST",
+    path: `/solicitudes-ayuda/${idOrMissing(ctx.solicitudId)}/documentos-consentimiento?fechaFirma=2026-09-07`,
+    formFile: { field: "archivo", path: FIXTURE_PDF, filename: "consentimiento-prueba.pdf" },
+    expected: ["200", "201"],
+    capture: (body) => {
+      ctx.documentoId = pickId(body);
+    },
+  });
+  await send({
+    id: "documentos-get-url",
+    method: "GET",
+    path: `/documentos-consentimiento/${idOrMissing(ctx.documentoId)}/url`,
+    expected: ["200"],
+    assertions: [
+      (body) => ({ ok: Boolean(body?.urlFirmada), text: "urlFirmada presente" }),
+      (body) => ({ ok: body?.expiraEnSegundos != null, text: "expiraEnSegundos presente" }),
+    ],
+  });
 
   await send({
     id: "auditoria-get",
@@ -1039,17 +791,58 @@ async function main() {
   });
 
   await send({
+    id: "solicitudes-post-eliminacion",
+    method: "POST",
+    path: `/solicitudes-ayuda/${idOrMissing(ctx.solicitudId)}/eliminacion`,
+    json: { motivo: "Duplicada (prueba endpoint-test)" },
+    expected: ["200"],
+  });
+  await send({
+    id: "solicitudes-post-restauracion",
+    method: "POST",
+    path: `/solicitudes-ayuda/${idOrMissing(ctx.solicitudId)}/restauracion`,
+    json: { motivo: "Eliminada por error (prueba endpoint-test)" },
+    expected: ["200"],
+  });
+
+  await send({
+    id: "organizacion-delete-parroquias-id",
+    method: "DELETE",
+    path: `/parroquias/${idOrMissing(ctx.testParroquiaId)}`,
+    json: { motivo: "Reorganización (prueba endpoint-test)" },
+    expected: ["200", "204"],
+    notes: ctx.testParroquiaId ? "DELETE de parroquia creada en esta corrida" : "Sin parroquia TEST; UUID placeholder",
+  });
+  await send({
+    id: "organizacion-delete-vicarias-id",
+    method: "DELETE",
+    path: `/vicarias/${idOrMissing(ctx.testVicariaId)}`,
+    json: { motivo: "Reorganización (prueba endpoint-test)" },
+    expected: ["200", "204"],
+  });
+  await send({
+    id: "organizacion-delete-diocesis-id",
+    method: "DELETE",
+    path: `/diocesis/${idOrMissing(ctx.testDiocesisId)}`,
+    json: { motivo: "Reorganización (prueba endpoint-test)" },
+    expected: ["200", "204"],
+  });
+
+  await send({
     id: "auth-delete-sesiones",
     method: "DELETE",
     path: "/auth/sesiones",
     expected: ["200", "204"],
   });
 
-  await writeFile(join(RESULTS, "_summary.md"), buildSummary());
+  const extra = ctx.tokenAcceso
+    ? ""
+    : "POST /auth/sesiones no devolvió tokenAcceso (la API no pudo hablar con Auth/Supabase). Los casos autenticados se enviaron igual y quedaron documentados, en su mayoría HTTP 401.";
+  await writeFile(join(RESULTS, "_summary.md"), buildSummary(extra));
 }
 
 function buildSummary(extra = "") {
-  const counts = { succeeded: 0, "failed partially": 0, "failed entirely": 0, skipped: 0 };
+  const counts = { succeeded: 0, "failed partially": 0, "failed entirely": 0 };
   for (const row of summary) {
     counts[row.verdict] = (counts[row.verdict] ?? 0) + 1;
   }
@@ -1058,14 +851,12 @@ function buildSummary(extra = "") {
     "",
     `- baseUrl: \`${BASE}\``,
     `- timestamp: ${new Date().toISOString()}`,
-    `- Postman collection: ayudas-rstc (\`29171076-9bae6770-5087-4b67-83e7-9654aab192c9\`)`,
     "",
     "## Conteos",
     "",
     `- succeeded: ${counts.succeeded}`,
     `- failed partially: ${counts["failed partially"]}`,
     `- failed entirely: ${counts["failed entirely"]}`,
-    `- skipped: ${counts.skipped}`,
     extra ? `\n${extra}\n` : "",
     "## Detalle",
     "",

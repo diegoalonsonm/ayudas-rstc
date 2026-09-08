@@ -1,203 +1,28 @@
 # Casos: Organización eclesial
 
-POST de diócesis/vicaría/parroquia solo si las listas GET están vacías (árbol aislado `TEST-*`). PATCH/DELETE siempre skipped.
+GET de listas existentes, luego POST/GET/PATCH/DELETE sobre un árbol aislado `TEST-*` de esta corrida.
 
-## organizacion-get-diocesis
+Al crear diócesis/vicaría/parroquia no se envía `codigo`: lo asigna la BD (`D01`, `D01-V01`, `D01-V01-P001`).
 
-| Campo | Valor |
-| --- | --- |
-| id | `organizacion-get-diocesis` |
-| execution | `run` |
-| method | `GET` |
-| path | `/diocesis` |
-| auth | Bearer |
-| expectedStatus | `200` |
-| captures | `diocesisId` si hay filas |
-| wave | 2 |
+## GET listas y por id
 
-## organizacion-get-diocesis-id
+- `organizacion-get-diocesis` → `GET /diocesis`
+- `organizacion-get-diocesis-id` → `GET /diocesis/{{id}}`
+- `organizacion-get-vicarias` / `organizacion-get-vicarias-id`
+- `organizacion-get-parroquias` / `organizacion-get-parroquias-id`
 
-| Campo | Valor |
-| --- | --- |
-| id | `organizacion-get-diocesis-id` |
-| execution | `run` |
-| method | `GET` |
-| path | `/diocesis/{{diocesisId}}` |
-| auth | Bearer |
-| expectedStatus | `200` |
-| dependsOn | `diocesisId` |
-| wave | 2 |
+## POST / PATCH / DELETE
 
-## organizacion-post-diocesis
+| id | method | path |
+| --- | --- | --- |
+| `organizacion-post-diocesis` | POST | `/diocesis` |
+| `organizacion-patch-diocesis-id` | PATCH | `/diocesis/{{testDiocesisId}}` |
+| `organizacion-post-vicarias` | POST | `/vicarias` |
+| `organizacion-patch-vicarias-id` | PATCH | `/vicarias/{{testVicariaId}}` |
+| `organizacion-post-parroquias` | POST | `/parroquias` |
+| `organizacion-patch-parroquias-id` | PATCH | `/parroquias/{{testParroquiaId}}` |
+| `organizacion-delete-parroquias-id` | DELETE | `/parroquias/{{testParroquiaId}}` |
+| `organizacion-delete-vicarias-id` | DELETE | `/vicarias/{{testVicariaId}}` |
+| `organizacion-delete-diocesis-id` | DELETE | `/diocesis/{{testDiocesisId}}` |
 
-| Campo | Valor |
-| --- | --- |
-| id | `organizacion-post-diocesis` |
-| execution | `run` (condicional) |
-| condition | ejecutar solo si `GET /diocesis` no devolvió filas |
-| method | `POST` |
-| path | `/diocesis` |
-| expectedStatus | `201` o `200` |
-| captures | `diocesisId` |
-| wave | 2 |
-
-```json
-{
-  "nombre": "Diócesis TEST Endpoint",
-  "codigo": "TEST-DIO"
-}
-```
-
-## organizacion-patch-diocesis-id
-
-| Campo | Valor |
-| --- | --- |
-| id | `organizacion-patch-diocesis-id` |
-| execution | `skipped` |
-| reason | No PATCH de organización existente |
-| method | `PATCH` |
-| path | `/diocesis/{{diocesisId}}` |
-
-## organizacion-delete-diocesis-id
-
-| Campo | Valor |
-| --- | --- |
-| id | `organizacion-delete-diocesis-id` |
-| execution | `skipped` |
-| reason | No DELETE de organización existente |
-| method | `DELETE` |
-| path | `/diocesis/{{diocesisId}}` |
-
-## organizacion-get-vicarias
-
-| Campo | Valor |
-| --- | --- |
-| id | `organizacion-get-vicarias` |
-| execution | `run` |
-| method | `GET` |
-| path | `/vicarias` |
-| auth | Bearer |
-| expectedStatus | `200` |
-| captures | `vicariaId` si hay filas |
-| wave | 2 |
-
-## organizacion-get-vicarias-id
-
-| Campo | Valor |
-| --- | --- |
-| id | `organizacion-get-vicarias-id` |
-| execution | `run` |
-| method | `GET` |
-| path | `/vicarias/{{vicariaId}}` |
-| auth | Bearer |
-| expectedStatus | `200` |
-| dependsOn | `vicariaId` |
-| wave | 2 |
-
-## organizacion-post-vicarias
-
-| Campo | Valor |
-| --- | --- |
-| id | `organizacion-post-vicarias` |
-| execution | `run` (condicional) |
-| condition | ejecutar solo si no hay vicaría y sí hay `diocesisId` |
-| method | `POST` |
-| path | `/vicarias` |
-| expectedStatus | `201` o `200` |
-| captures | `vicariaId` |
-| wave | 2 |
-
-```json
-{
-  "nombre": "Vicaría TEST Endpoint",
-  "codigo": "TEST-VIC",
-  "diocesisId": "{{diocesisId}}"
-}
-```
-
-## organizacion-patch-vicarias-id
-
-| Campo | Valor |
-| --- | --- |
-| id | `organizacion-patch-vicarias-id` |
-| execution | `skipped` |
-| reason | No PATCH de organización existente |
-| method | `PATCH` |
-| path | `/vicarias/{{vicariaId}}` |
-
-## organizacion-delete-vicarias-id
-
-| Campo | Valor |
-| --- | --- |
-| id | `organizacion-delete-vicarias-id` |
-| execution | `skipped` |
-| reason | No DELETE de organización existente |
-| method | `DELETE` |
-| path | `/vicarias/{{vicariaId}}` |
-
-## organizacion-get-parroquias
-
-| Campo | Valor |
-| --- | --- |
-| id | `organizacion-get-parroquias` |
-| execution | `run` |
-| method | `GET` |
-| path | `/parroquias` |
-| auth | Bearer |
-| expectedStatus | `200` |
-| captures | `parroquiaId` si hay filas |
-| wave | 2 |
-
-## organizacion-get-parroquias-id
-
-| Campo | Valor |
-| --- | --- |
-| id | `organizacion-get-parroquias-id` |
-| execution | `run` |
-| method | `GET` |
-| path | `/parroquias/{{parroquiaId}}` |
-| auth | Bearer |
-| expectedStatus | `200` |
-| dependsOn | `parroquiaId` |
-| wave | 2 |
-
-## organizacion-post-parroquias
-
-| Campo | Valor |
-| --- | --- |
-| id | `organizacion-post-parroquias` |
-| execution | `run` (condicional) |
-| condition | ejecutar solo si no hay parroquia y sí hay `vicariaId` |
-| method | `POST` |
-| path | `/parroquias` |
-| expectedStatus | `201` o `200` |
-| captures | `parroquiaId` |
-| wave | 2 |
-
-```json
-{
-  "nombre": "Parroquia TEST Endpoint",
-  "codigo": "TEST-PAR",
-  "vicariaId": "{{vicariaId}}"
-}
-```
-
-## organizacion-patch-parroquias-id
-
-| Campo | Valor |
-| --- | --- |
-| id | `organizacion-patch-parroquias-id` |
-| execution | `skipped` |
-| reason | No PATCH de organización existente |
-| method | `PATCH` |
-| path | `/parroquias/{{parroquiaId}}` |
-
-## organizacion-delete-parroquias-id
-
-| Campo | Valor |
-| --- | --- |
-| id | `organizacion-delete-parroquias-id` |
-| execution | `skipped` |
-| reason | No DELETE de organización existente |
-| method | `DELETE` |
-| path | `/parroquias/{{parroquiaId}}` |
+DELETE va al final de la corrida (después de solicitudes). Body: `{ "motivo": "Reorganización (prueba endpoint-test)" }`.

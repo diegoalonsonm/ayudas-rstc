@@ -1,3 +1,4 @@
+import { GestionarCatalogo } from "../../src/application/useCases/catalogos/gestionarCatalogo";
 import { IniciarSesion } from "../../src/application/useCases/auth/iniciarSesion";
 import { CambiarEstadoSolicitud, RegistrarSolicitud } from "../../src/application/useCases/solicitudes/gestionarSolicitudes";
 import { CrearUsuario } from "../../src/application/useCases/usuarios/gestionarUsuarios";
@@ -153,5 +154,23 @@ describe("tipos de apoyo a tests", () => {
     };
     expect(usuario.activo).toBe(true);
     expect(asignacion.parroquiaId).toBe("p1");
+  });
+});
+
+describe("GestionarCatalogo", () => {
+  const administrador: ActorActual = {
+    ...actor,
+    rolCodigo: CodigoRol.ADMINISTRADOR,
+    parroquiaId: null,
+  };
+
+  it("omite codigo vacío para que la BD lo asigne", async () => {
+    const insertar = jest.fn().mockResolvedValue({ id: "d1", nombre: "Cartago" });
+    const caso = new GestionarCatalogo({ insertar } as never);
+    await caso.crear(administrador, "diocesis", { nombre: "Cartago", codigo: "  " });
+    expect(insertar).toHaveBeenCalledWith("diocesis", {
+      nombre: "Cartago",
+      creadoPorUsuarioId: administrador.usuarioId,
+    });
   });
 });
