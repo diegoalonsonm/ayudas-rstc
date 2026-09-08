@@ -45,7 +45,12 @@ export class RepositorioUsuariosSupabase implements RepositorioUsuarios {
   }
 
   async actualizarUltimoAcceso(id: string, fechaIso: string): Promise<void> {
-    await this.base.actualizar("usuarios", id, { ultimoAccesoEn: fechaIso });
+    const { error } = await this.base
+      .clienteServicio()
+      .from("usuarios")
+      .update({ ultimo_acceso_en: fechaIso })
+      .eq("id", id);
+    lanzarSiError(error);
   }
 
   actualizar(id: string, datos: Record<string, unknown>): Promise<Usuario> {
@@ -55,7 +60,7 @@ export class RepositorioUsuariosSupabase implements RepositorioUsuarios {
   async obtenerAsignacionVigente(usuarioId: string): Promise<AsignacionUsuario | null> {
     const ahora = new Date().toISOString();
     const { data, error } = await this.base
-      .clienteUsuario()
+      .clienteServicio()
       .from("asignaciones_usuario")
       .select("*, roles!inner(codigo)")
       .eq("usuario_id", usuarioId)
