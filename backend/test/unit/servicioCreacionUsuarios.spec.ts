@@ -88,6 +88,19 @@ describe("ServicioCreacionUsuarios", () => {
     ).toThrow(ErrorNoAutorizado);
   });
 
+  it("permite al administrador crear un administrador de una parroquia", () => {
+    expect(() =>
+      servicio.validarCreacion(
+        actor({ rolCodigo: CodigoRol.ADMINISTRADOR, parroquiaId: null, vicariaId: null, diocesisId: null }),
+        CodigoRol.ADMINISTRADOR,
+        { diocesisId: null, vicariaId: null, parroquiaId: "p1" },
+        "auth-nuevo",
+        parroquia,
+        vicaria,
+      ),
+    ).not.toThrow();
+  });
+
   it("permite al coordinador parroquial crear pastoral de su parroquia", () => {
     expect(() =>
       servicio.validarCreacion(

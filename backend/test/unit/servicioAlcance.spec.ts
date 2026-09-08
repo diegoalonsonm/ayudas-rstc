@@ -98,6 +98,20 @@ describe("ServicioAlcance", () => {
         vicariaId: null,
         parroquiaId: null,
       }),
+    ).not.toThrow();
+    expect(() =>
+      servicio.validarFormaDeAlcance(CodigoRol.ADMINISTRADOR, {
+        diocesisId: null,
+        vicariaId: null,
+        parroquiaId: "p1",
+      }),
+    ).not.toThrow();
+    expect(() =>
+      servicio.validarFormaDeAlcance(CodigoRol.ADMINISTRADOR, {
+        diocesisId: "d1",
+        vicariaId: null,
+        parroquiaId: "p1",
+      }),
     ).toThrow(ErrorValidacion);
     expect(() =>
       servicio.exigirParroquiaEnAlcance(

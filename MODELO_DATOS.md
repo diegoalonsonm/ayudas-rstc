@@ -456,8 +456,8 @@ Reglas de alcance:
 - `COORDINADOR_PARROQUIAL`: acceso a su parroquia.
 - `COORDINADOR_VICARIAL`: acceso a todas las parroquias de su vicaría.
 - `COORDINADOR_DIOCESANO`: acceso a toda la diócesis.
-- `ADMINISTRADOR`: acceso total.
-- Una asignación debe tener exactamente el alcance requerido por el rol; por ejemplo, un coordinador vicarial requiere `vicaria_id` y no `parroquia_id`.
+- `ADMINISTRADOR`: acceso total en todos los niveles (diócesis, vicaría y parroquia), con alcance territorial opcional de un solo nivel para ubicar la asignación.
+- Una asignación debe tener exactamente el alcance requerido por el rol; por ejemplo, un coordinador vicarial requiere `vicaria_id` y no `parroquia_id`. El administrador puede omitir alcance o indicar un único nivel.
 - La creación de usuarios y la asignación de su rol y alcance se ejecutan en una sola operación transaccional.
 
 Reglas de creación de usuarios:

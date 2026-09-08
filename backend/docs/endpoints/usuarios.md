@@ -2,7 +2,7 @@
 
 Ver [cómo probar la API](README.md). Todas las rutas autenticadas. La creación valida jerarquía de roles y alcance (también en RPC `crear_usuario_con_asignacion`).
 
-Alcance por rol al crear o reasignar: pastoral/parroquial → `parroquiaId`; vicarial → `vicariaId`; diocesano → `diocesisId`; administrador → sin alcance territorial.
+Alcance por rol al crear o reasignar: pastoral/parroquial → `parroquiaId`; vicarial → `vicariaId`; diocesano → `diocesisId`; administrador → opcionalmente un nivel (`parroquiaId`, `vicariaId` o `diocesisId`) o ninguno; el acceso sigue siendo total.
 
 ## GET /usuarios
 

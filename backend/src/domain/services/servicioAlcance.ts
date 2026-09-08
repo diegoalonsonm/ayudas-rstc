@@ -80,8 +80,11 @@ export class ServicioAlcance {
       return;
     }
     if (rolCodigo === CodigoRol.ADMINISTRADOR) {
-      if (alcance.diocesisId || alcance.vicariaId || alcance.parroquiaId) {
-        throw new ErrorValidacion("El rol ADMINISTRADOR no admite alcance territorial");
+      const niveles = [alcance.diocesisId, alcance.vicariaId, alcance.parroquiaId].filter(Boolean);
+      if (niveles.length > 1) {
+        throw new ErrorValidacion(
+          "El rol ADMINISTRADOR admite a lo sumo un nivel de alcance territorial",
+        );
       }
       return;
     }
