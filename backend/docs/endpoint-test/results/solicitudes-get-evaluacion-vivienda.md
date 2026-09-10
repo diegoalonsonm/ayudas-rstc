@@ -1,8 +1,8 @@
 # solicitudes-get-evaluacion-vivienda
 
 - verdict: **succeeded**
-- timestamp: 2026-09-10T17:30:37.696Z
-- durationMs: 22
+- timestamp: 2026-09-10T17:47:57.113Z
+- durationMs: 44
 
 ## Assertions
 
@@ -11,7 +11,7 @@
 ## Request
 
 ```http
-GET http://localhost:3000/api/v1/solicitudes-ayuda/98468a57-02c3-4f43-8120-13ed93f72a48/evaluacion-vivienda
+GET http://localhost:3000/api/v1/solicitudes-ayuda/3fd57ce9-a675-42c1-a602-bb146b54280b/evaluacion-vivienda
 Authorization: Bearer [REDACTED]
 ```
 
@@ -21,7 +21,7 @@ Authorization: Bearer [REDACTED]
 HTTP 200
 connection: keep-alive
 content-length: 0
-date: Thu, 10 Sep 2026 17:30:37 GMT
+date: Thu, 10 Sep 2026 17:47:57 GMT
 keep-alive: timeout=5
 x-powered-by: Express
 

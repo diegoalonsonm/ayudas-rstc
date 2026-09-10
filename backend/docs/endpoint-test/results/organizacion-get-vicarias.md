@@ -1,8 +1,8 @@
 # organizacion-get-vicarias
 
 - verdict: **succeeded**
-- timestamp: 2026-09-10T17:30:36.246Z
-- durationMs: 32
+- timestamp: 2026-09-10T17:47:55.357Z
+- durationMs: 36
 
 ## Assertions
 
@@ -22,7 +22,7 @@ HTTP 200
 connection: keep-alive
 content-length: 1856
 content-type: application/json; charset=utf-8
-date: Thu, 10 Sep 2026 17:30:36 GMT
+date: Thu, 10 Sep 2026 17:47:55 GMT
 etag: W/"740-GqkFv2ATPAi+ww8o83o7nSNQbFg"
 keep-alive: timeout=5
 x-powered-by: Express

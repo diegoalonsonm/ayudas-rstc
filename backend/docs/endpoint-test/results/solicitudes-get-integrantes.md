@@ -1,8 +1,8 @@
 # solicitudes-get-integrantes
 
 - verdict: **succeeded**
-- timestamp: 2026-09-10T17:30:37.580Z
-- durationMs: 27
+- timestamp: 2026-09-10T17:47:56.951Z
+- durationMs: 21
 
 ## Assertions
 
@@ -11,7 +11,7 @@
 ## Request
 
 ```http
-GET http://localhost:3000/api/v1/solicitudes-ayuda/98468a57-02c3-4f43-8120-13ed93f72a48/integrantes
+GET http://localhost:3000/api/v1/solicitudes-ayuda/3fd57ce9-a675-42c1-a602-bb146b54280b/integrantes
 Authorization: Bearer [REDACTED]
 ```
 
@@ -22,7 +22,7 @@ HTTP 200
 connection: keep-alive
 content-length: 2
 content-type: application/json; charset=utf-8
-date: Thu, 10 Sep 2026 17:30:37 GMT
+date: Thu, 10 Sep 2026 17:47:56 GMT
 etag: W/"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w"
 keep-alive: timeout=5
 x-powered-by: Express

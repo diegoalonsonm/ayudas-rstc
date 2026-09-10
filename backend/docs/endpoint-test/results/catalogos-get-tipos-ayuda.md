@@ -1,8 +1,8 @@
 # catalogos-get-tipos-ayuda
 
 - verdict: **succeeded**
-- timestamp: 2026-09-10T17:30:35.917Z
-- durationMs: 19
+- timestamp: 2026-09-10T17:47:54.915Z
+- durationMs: 53
 
 ## Assertions
 
@@ -23,7 +23,7 @@ HTTP 200
 connection: keep-alive
 content-length: 3464
 content-type: application/json; charset=utf-8
-date: Thu, 10 Sep 2026 17:30:35 GMT
+date: Thu, 10 Sep 2026 17:47:54 GMT
 etag: W/"d88-ICpKHtb7OnLDCnDugNTZSbXXnZw"
 keep-alive: timeout=5
 x-powered-by: Express

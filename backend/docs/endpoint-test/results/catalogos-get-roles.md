@@ -1,8 +1,8 @@
 # catalogos-get-roles
 
 - verdict: **succeeded**
-- timestamp: 2026-09-10T17:30:35.946Z
-- durationMs: 28
+- timestamp: 2026-09-10T17:47:54.954Z
+- durationMs: 39
 
 ## Assertions
 
@@ -23,7 +23,7 @@ HTTP 200
 connection: keep-alive
 content-length: 1673
 content-type: application/json; charset=utf-8
-date: Thu, 10 Sep 2026 17:30:35 GMT
+date: Thu, 10 Sep 2026 17:47:54 GMT
 etag: W/"689-HY6L753rYOIBceN3A7Z2OvtEA4E"
 keep-alive: timeout=5
 x-powered-by: Express

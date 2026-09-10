@@ -1,8 +1,8 @@
 # catalogos-get-rangos-ingreso
 
 - verdict: **succeeded**
-- timestamp: 2026-09-10T17:30:35.803Z
-- durationMs: 21
+- timestamp: 2026-09-10T17:47:54.715Z
+- durationMs: 52
 
 ## Assertions
 
@@ -23,7 +23,7 @@ HTTP 200
 connection: keep-alive
 content-length: 3175
 content-type: application/json; charset=utf-8
-date: Thu, 10 Sep 2026 17:30:35 GMT
+date: Thu, 10 Sep 2026 17:47:54 GMT
 etag: W/"c67-cpib73dJS8c1edhZyqMSBZZSbjQ"
 keep-alive: timeout=5
 x-powered-by: Express

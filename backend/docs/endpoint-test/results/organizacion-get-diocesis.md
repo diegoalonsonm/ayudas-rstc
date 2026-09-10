@@ -1,8 +1,8 @@
 # organizacion-get-diocesis
 
 - verdict: **succeeded**
-- timestamp: 2026-09-10T17:30:36.150Z
-- durationMs: 41
+- timestamp: 2026-09-10T17:47:55.208Z
+- durationMs: 37
 
 ## Assertions
 
@@ -22,7 +22,7 @@ HTTP 200
 connection: keep-alive
 content-length: 308
 content-type: application/json; charset=utf-8
-date: Thu, 10 Sep 2026 17:30:36 GMT
+date: Thu, 10 Sep 2026 17:47:55 GMT
 etag: W/"134-6cmwzXjLCy7wan7uW7i3qtuKuRc"
 keep-alive: timeout=5
 x-powered-by: Express

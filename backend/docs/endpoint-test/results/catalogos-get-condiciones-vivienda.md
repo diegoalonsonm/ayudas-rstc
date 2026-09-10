@@ -1,8 +1,8 @@
 # catalogos-get-condiciones-vivienda
 
 - verdict: **succeeded**
-- timestamp: 2026-09-10T17:30:35.897Z
-- durationMs: 19
+- timestamp: 2026-09-10T17:47:54.862Z
+- durationMs: 29
 
 ## Assertions
 
@@ -23,7 +23,7 @@ HTTP 200
 connection: keep-alive
 content-length: 1538
 content-type: application/json; charset=utf-8
-date: Thu, 10 Sep 2026 17:30:35 GMT
+date: Thu, 10 Sep 2026 17:47:54 GMT
 etag: W/"602-I18n0CFQAfGl0mkOIEm57sPvjyc"
 keep-alive: timeout=5
 x-powered-by: Express

@@ -1,8 +1,8 @@
 # auth-post-sesiones-renovacion
 
 - verdict: **succeeded**
-- timestamp: 2026-09-10T17:30:35.674Z
-- durationMs: 76
+- timestamp: 2026-09-10T17:47:54.492Z
+- durationMs: 92
 
 ## Assertions
 
@@ -28,8 +28,8 @@ HTTP 201
 connection: keep-alive
 content-length: 774
 content-type: application/json; charset=utf-8
-date: Thu, 10 Sep 2026 17:30:35 GMT
-etag: W/"306-0bLfLJTQpTInbc/HSy2XLLcLzlk"
+date: Thu, 10 Sep 2026 17:47:54 GMT
+etag: W/"306-XP6hHPAXCQ56gzwCpr9fb2vRKzQ"
 keep-alive: timeout=5
 x-powered-by: Express
 

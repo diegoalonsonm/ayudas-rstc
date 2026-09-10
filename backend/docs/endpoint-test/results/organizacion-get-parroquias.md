@@ -1,8 +1,8 @@
 # organizacion-get-parroquias
 
 - verdict: **succeeded**
-- timestamp: 2026-09-10T17:30:36.354Z
-- durationMs: 34
+- timestamp: 2026-09-10T17:47:55.502Z
+- durationMs: 35
 
 ## Assertions
 
@@ -22,7 +22,7 @@ HTTP 200
 connection: keep-alive
 content-length: 15572
 content-type: application/json; charset=utf-8
-date: Thu, 10 Sep 2026 17:30:36 GMT
+date: Thu, 10 Sep 2026 17:47:55 GMT
 etag: W/"3cd4-bMUWna+45p01JdBUe0QFeyI4RGA"
 keep-alive: timeout=5
 x-powered-by: Express

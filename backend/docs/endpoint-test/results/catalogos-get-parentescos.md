@@ -1,8 +1,8 @@
 # catalogos-get-parentescos
 
 - verdict: **succeeded**
-- timestamp: 2026-09-10T17:30:35.782Z
-- durationMs: 28
+- timestamp: 2026-09-10T17:47:54.662Z
+- durationMs: 53
 
 ## Assertions
 
@@ -23,7 +23,7 @@ HTTP 200
 connection: keep-alive
 content-length: 2684
 content-type: application/json; charset=utf-8
-date: Thu, 10 Sep 2026 17:30:35 GMT
+date: Thu, 10 Sep 2026 17:47:54 GMT
 etag: W/"a7c-0FgEThDtvydMGE+900zaqISSSzg"
 keep-alive: timeout=5
 x-powered-by: Express

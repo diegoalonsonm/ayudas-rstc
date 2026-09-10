@@ -1,8 +1,8 @@
 # organizacion-post-diocesis
 
 - verdict: **succeeded**
-- timestamp: 2026-09-10T17:30:36.172Z
-- durationMs: 21
+- timestamp: 2026-09-10T17:47:55.242Z
+- durationMs: 33
 
 ## Assertions
 
@@ -16,7 +16,7 @@ Authorization: Bearer [REDACTED]
 Content-Type: application/json
 
 {
-  "nombre": "Diócesis TEST 1789061435274"
+  "nombre": "Diócesis TEST 1789062473974"
 }
 ```
 
@@ -25,13 +25,13 @@ Content-Type: application/json
 ```http
 HTTP 201
 connection: keep-alive
-content-length: 361
+content-length: 359
 content-type: application/json; charset=utf-8
-date: Thu, 10 Sep 2026 17:30:36 GMT
-etag: W/"169-Fh4T97uAThu8CWlpUJtSUxOLVhM"
+date: Thu, 10 Sep 2026 17:47:55 GMT
+etag: W/"167-A637hHusav1rDb0xY9mDAZk9EoE"
 keep-alive: timeout=5
 x-powered-by: Express
 
-{"id":"db2bb6a1-1eb0-47c6-a19f-67ef2d945ed8","nombre":"Diócesis TEST 1789061435274","codigo":"D04","creadoEn":"2026-09-10T17:30:36.276741+00:00","creadoPorUsuarioId":"6bf12564-ed1f-4a20-809d-bf6b23e029ad","actualizadoEn":"2026-09-10T17:30:36.276741+00:00","actualizadoPorUsuarioId":null,"eliminadoEn":null,"eliminadoPorUsuarioId":null,"motivoEliminacion":null}
+{"id":"5ab240bd-b47b-4510-a0dd-cb9506a518ee","nombre":"Diócesis TEST 1789062473974","codigo":"D05","creadoEn":"2026-09-10T17:47:55.31023+00:00","creadoPorUsuarioId":"6bf12564-ed1f-4a20-809d-bf6b23e029ad","actualizadoEn":"2026-09-10T17:47:55.31023+00:00","actualizadoPorUsuarioId":null,"eliminadoEn":null,"eliminadoPorUsuarioId":null,"motivoEliminacion":null}
 ```
 

@@ -1,8 +1,8 @@
 # catalogos-get-tipos-vivienda
 
 - verdict: **succeeded**
-- timestamp: 2026-09-10T17:30:35.856Z
-- durationMs: 52
+- timestamp: 2026-09-10T17:47:54.796Z
+- durationMs: 80
 
 ## Assertions
 
@@ -23,7 +23,7 @@ HTTP 200
 connection: keep-alive
 content-length: 1231
 content-type: application/json; charset=utf-8
-date: Thu, 10 Sep 2026 17:30:35 GMT
+date: Thu, 10 Sep 2026 17:47:54 GMT
 etag: W/"4cf-meloPQ4KTwYrs9KRbcvyYhjrIrc"
 keep-alive: timeout=5
 x-powered-by: Express

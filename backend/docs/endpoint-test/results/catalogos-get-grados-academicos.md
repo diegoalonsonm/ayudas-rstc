@@ -1,8 +1,8 @@
 # catalogos-get-grados-academicos
 
 - verdict: **succeeded**
-- timestamp: 2026-09-10T17:30:35.753Z
-- durationMs: 22
+- timestamp: 2026-09-10T17:47:54.608Z
+- durationMs: 23
 
 ## Assertions
 
@@ -23,7 +23,7 @@ HTTP 200
 connection: keep-alive
 content-length: 3154
 content-type: application/json; charset=utf-8
-date: Thu, 10 Sep 2026 17:30:35 GMT
+date: Thu, 10 Sep 2026 17:47:54 GMT
 etag: W/"c52-9JiTWiHQALrF7LxV7ejKKeUyDt0"
 keep-alive: timeout=5
 x-powered-by: Express

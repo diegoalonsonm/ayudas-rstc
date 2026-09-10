@@ -1,7 +1,7 @@
 # Resultados de endpoints
 
 - baseUrl: `http://localhost:3000/api/v1`
-- timestamp: 2026-09-10T17:30:38.752Z
+- timestamp: 2026-09-10T17:47:58.274Z
 
 ## Conteos
 
