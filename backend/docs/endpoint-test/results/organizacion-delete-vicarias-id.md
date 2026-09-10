@@ -1,20 +1,19 @@
 # organizacion-delete-vicarias-id
 
-- verdict: **failed entirely**
-- timestamp: 2026-09-08T14:24:54.278Z
-- durationMs: 6
+- verdict: **succeeded**
+- timestamp: 2026-09-10T17:30:38.682Z
+- durationMs: 34
 
 ## Assertions
 
-- fail: HTTP 401 matches expected 200|204
-- fail: tokenAcceso available before authenticated request
+- pass: HTTP 200 matches expected 200|204
 
 ## Request
 
 ```http
-DELETE http://localhost:3000/api/v1/vicarias/00000000-0000-0000-0000-000000000000
+DELETE http://localhost:3000/api/v1/vicarias/7014888f-750d-4a61-b07f-52335c4a683c
+Authorization: Bearer [REDACTED]
 Content-Type: application/json
-Authorization: (missing tokenAcceso)
 
 {
   "motivo": "Reorganización (prueba endpoint-test)"
@@ -24,15 +23,15 @@ Authorization: (missing tokenAcceso)
 ## Response
 
 ```http
-HTTP 401
+HTTP 200
 connection: keep-alive
-content-length: 54
+content-length: 559
 content-type: application/json; charset=utf-8
-date: Tue, 08 Sep 2026 14:24:54 GMT
-etag: W/"36-7/fXKejgUjZKN8aW/UmVt+Lgj/Q"
+date: Thu, 10 Sep 2026 17:30:38 GMT
+etag: W/"22f-5mgB94V1aUYeh2oZVrUhIXHxWSQ"
 keep-alive: timeout=5
 x-powered-by: Express
 
-{"codigo":"NO_AUTENTICADO","mensaje":"No autenticado"}
+{"id":"7014888f-750d-4a61-b07f-52335c4a683c","diocesisId":"db2bb6a1-1eb0-47c6-a19f-67ef2d945ed8","nombre":"Vicaría TEST 1789061435274 actualizado","codigo":"D04-V01","creadoEn":"2026-09-10T17:30:36.376065+00:00","creadoPorUsuarioId":"6bf12564-ed1f-4a20-809d-bf6b23e029ad","actualizadoEn":"2026-09-10T17:30:38.782233+00:00","actualizadoPorUsuarioId":"6bf12564-ed1f-4a20-809d-bf6b23e029ad","eliminadoEn":"2026-09-10T17:30:38.665+00:00","eliminadoPorUsuarioId":"6bf12564-ed1f-4a20-809d-bf6b23e029ad","motivoEliminacion":"Reorganización (prueba endpoint-test)"}
 ```
 

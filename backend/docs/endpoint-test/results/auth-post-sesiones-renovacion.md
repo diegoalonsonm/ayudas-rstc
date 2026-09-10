@@ -1,15 +1,14 @@
 # auth-post-sesiones-renovacion
 
-- verdict: **failed entirely**
-- timestamp: 2026-09-08T14:24:54.051Z
-- durationMs: 25424
-- notes: tokenRenovacion no capturado; se envía placeholder
+- verdict: **succeeded**
+- timestamp: 2026-09-10T17:30:35.674Z
+- durationMs: 76
 
 ## Assertions
 
-- fail: HTTP 401 matches expected 200|201
-- fail: tokenAcceso presente
-- fail: tokenRenovacion presente
+- pass: HTTP 201 matches expected 200|201
+- pass: tokenAcceso presente
+- pass: tokenRenovacion presente
 
 ## Request
 
@@ -25,15 +24,15 @@ Content-Type: application/json
 ## Response
 
 ```http
-HTTP 401
+HTTP 201
 connection: keep-alive
-content-length: 69
+content-length: 774
 content-type: application/json; charset=utf-8
-date: Tue, 08 Sep 2026 14:24:54 GMT
-etag: W/"45-0X+XBxGzfqMTiiUGOsUcVjbxSVc"
+date: Thu, 10 Sep 2026 17:30:35 GMT
+etag: W/"306-0bLfLJTQpTInbc/HSy2XLLcLzlk"
 keep-alive: timeout=5
 x-powered-by: Express
 
-{"codigo":"NO_AUTENTICADO","mensaje":"No se pudo renovar la sesión"}
+{"tokenAcceso": "[REDACTED]","tokenRenovacion": "[REDACTED]","expiraEn":3600}
 ```
 

@@ -1,20 +1,19 @@
 # solicitudes-post-evaluacion-vivienda
 
-- verdict: **failed entirely**
-- timestamp: 2026-09-08T14:24:54.218Z
-- durationMs: 8
+- verdict: **succeeded**
+- timestamp: 2026-09-10T17:30:37.740Z
+- durationMs: 43
 
 ## Assertions
 
-- fail: HTTP 401 matches expected 200|201
-- fail: tokenAcceso available before authenticated request
+- pass: HTTP 201 matches expected 200|201
 
 ## Request
 
 ```http
-POST http://localhost:3000/api/v1/solicitudes-ayuda/00000000-0000-0000-0000-000000000000/evaluacion-vivienda
+POST http://localhost:3000/api/v1/solicitudes-ayuda/98468a57-02c3-4f43-8120-13ed93f72a48/evaluacion-vivienda
+Authorization: Bearer [REDACTED]
 Content-Type: application/json
-Authorization: (missing tokenAcceso)
 
 {
   "observaciones": "Techo de zinc"
@@ -24,15 +23,15 @@ Authorization: (missing tokenAcceso)
 ## Response
 
 ```http
-HTTP 401
+HTTP 201
 connection: keep-alive
-content-length: 54
+content-length: 501
 content-type: application/json; charset=utf-8
-date: Tue, 08 Sep 2026 14:24:54 GMT
-etag: W/"36-7/fXKejgUjZKN8aW/UmVt+Lgj/Q"
+date: Thu, 10 Sep 2026 17:30:37 GMT
+etag: W/"1f5-CZvJt97GmkECcO+8xeXspdVO+4Q"
 keep-alive: timeout=5
 x-powered-by: Express
 
-{"codigo":"NO_AUTENTICADO","mensaje":"No autenticado"}
+{"id":"6a305f14-7357-4e7b-97d6-667992ea9917","solicitudAyudaId":"98468a57-02c3-4f43-8120-13ed93f72a48","tipoViviendaId":null,"tipoTenenciaId":null,"condicionViviendaId":null,"observaciones":"Techo de zinc","creadoEn":"2026-09-10T17:30:37.843551+00:00","creadoPorUsuarioId":"6bf12564-ed1f-4a20-809d-bf6b23e029ad","actualizadoEn":"2026-09-10T17:30:37.843551+00:00","actualizadoPorUsuarioId":"6bf12564-ed1f-4a20-809d-bf6b23e029ad","eliminadoEn":null,"eliminadoPorUsuarioId":null,"motivoEliminacion":null}
 ```
 

@@ -1,35 +1,33 @@
 # catalogos-get-roles-id
 
-- verdict: **failed entirely**
-- timestamp: 2026-09-08T14:24:54.100Z
-- durationMs: 2
-- notes: rolId no capturado; se usa UUID placeholder
+- verdict: **succeeded**
+- timestamp: 2026-09-10T17:30:36.020Z
+- durationMs: 18
 
 ## Assertions
 
-- fail: HTTP 401 matches expected 200
-- fail: tokenAcceso available before authenticated request
-- fail: objeto de rol
+- pass: HTTP 200 matches expected 200
+- pass: objeto de rol
 
 ## Request
 
 ```http
-GET http://localhost:3000/api/v1/catalogos/roles/00000000-0000-0000-0000-000000000000
-Authorization: (missing tokenAcceso)
+GET http://localhost:3000/api/v1/catalogos/roles/fa3ecfec-e752-53b3-aebd-0c88cc1b40bb
+Authorization: Bearer [REDACTED]
 ```
 
 ## Response
 
 ```http
-HTTP 401
+HTTP 200
 connection: keep-alive
-content-length: 54
+content-length: 328
 content-type: application/json; charset=utf-8
-date: Tue, 08 Sep 2026 14:24:54 GMT
-etag: W/"36-7/fXKejgUjZKN8aW/UmVt+Lgj/Q"
+date: Thu, 10 Sep 2026 17:30:36 GMT
+etag: W/"148-SRHySPqsCVpPTfxncArDW0vb7aI"
 keep-alive: timeout=5
 x-powered-by: Express
 
-{"codigo":"NO_AUTENTICADO","mensaje":"No autenticado"}
+{"id":"fa3ecfec-e752-53b3-aebd-0c88cc1b40bb","codigo":"PERSONAL_PASTORAL","nombre":"Personal pastoral","creadoEn":"2026-08-26T23:06:21.05665+00:00","creadoPorUsuarioId":null,"actualizadoEn":"2026-08-26T23:06:21.05665+00:00","actualizadoPorUsuarioId":null,"eliminadoEn":null,"eliminadoPorUsuarioId":null,"motivoEliminacion":null}
 ```
 

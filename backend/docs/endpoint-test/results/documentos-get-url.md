@@ -1,35 +1,34 @@
 # documentos-get-url
 
-- verdict: **failed entirely**
-- timestamp: 2026-09-08T14:24:54.261Z
-- durationMs: 7
+- verdict: **succeeded**
+- timestamp: 2026-09-10T17:30:38.402Z
+- durationMs: 57
 
 ## Assertions
 
-- fail: HTTP 401 matches expected 200
-- fail: tokenAcceso available before authenticated request
-- fail: urlFirmada presente
-- fail: expiraEnSegundos presente
+- pass: HTTP 200 matches expected 200
+- pass: urlFirmada presente
+- pass: expiraEnSegundos presente
 
 ## Request
 
 ```http
-GET http://localhost:3000/api/v1/documentos-consentimiento/00000000-0000-0000-0000-000000000000/url
-Authorization: (missing tokenAcceso)
+GET http://localhost:3000/api/v1/documentos-consentimiento/1273433c-1274-4654-8cd5-0c059fc4c65a/url
+Authorization: Bearer [REDACTED]
 ```
 
 ## Response
 
 ```http
-HTTP 401
+HTTP 200
 connection: keep-alive
-content-length: 54
+content-length: 452
 content-type: application/json; charset=utf-8
-date: Tue, 08 Sep 2026 14:24:54 GMT
-etag: W/"36-7/fXKejgUjZKN8aW/UmVt+Lgj/Q"
+date: Thu, 10 Sep 2026 17:30:38 GMT
+etag: W/"1c4-IXSoIcgS7Q510a7d1MOtcmq91LY"
 keep-alive: timeout=5
 x-powered-by: Express
 
-{"codigo":"NO_AUTENTICADO","mensaje":"No autenticado"}
+{"urlFirmada": "[REDACTED]","expiraEnSegundos":60}
 ```
 

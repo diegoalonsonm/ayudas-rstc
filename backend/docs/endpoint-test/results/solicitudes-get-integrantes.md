@@ -1,33 +1,32 @@
 # solicitudes-get-integrantes
 
-- verdict: **failed entirely**
-- timestamp: 2026-09-08T14:24:54.200Z
-- durationMs: 3
+- verdict: **succeeded**
+- timestamp: 2026-09-10T17:30:37.580Z
+- durationMs: 27
 
 ## Assertions
 
-- fail: HTTP 401 matches expected 200
-- fail: tokenAcceso available before authenticated request
+- pass: HTTP 200 matches expected 200
 
 ## Request
 
 ```http
-GET http://localhost:3000/api/v1/solicitudes-ayuda/00000000-0000-0000-0000-000000000000/integrantes
-Authorization: (missing tokenAcceso)
+GET http://localhost:3000/api/v1/solicitudes-ayuda/98468a57-02c3-4f43-8120-13ed93f72a48/integrantes
+Authorization: Bearer [REDACTED]
 ```
 
 ## Response
 
 ```http
-HTTP 401
+HTTP 200
 connection: keep-alive
-content-length: 54
+content-length: 2
 content-type: application/json; charset=utf-8
-date: Tue, 08 Sep 2026 14:24:54 GMT
-etag: W/"36-7/fXKejgUjZKN8aW/UmVt+Lgj/Q"
+date: Thu, 10 Sep 2026 17:30:37 GMT
+etag: W/"2-l9Fw4VUO7kr8CvBlt4zaMCqXZ0w"
 keep-alive: timeout=5
 x-powered-by: Express
 
-{"codigo":"NO_AUTENTICADO","mensaje":"No autenticado"}
+[]
 ```
 

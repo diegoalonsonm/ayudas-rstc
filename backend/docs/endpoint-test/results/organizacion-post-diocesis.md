@@ -1,39 +1,37 @@
 # organizacion-post-diocesis
 
-- verdict: **failed entirely**
-- timestamp: 2026-09-08T14:24:54.116Z
-- durationMs: 3
+- verdict: **succeeded**
+- timestamp: 2026-09-10T17:30:36.172Z
+- durationMs: 21
 
 ## Assertions
 
-- fail: HTTP 401 matches expected 200|201
-- fail: tokenAcceso available before authenticated request
+- pass: HTTP 201 matches expected 200|201
 
 ## Request
 
 ```http
 POST http://localhost:3000/api/v1/diocesis
+Authorization: Bearer [REDACTED]
 Content-Type: application/json
-Authorization: (missing tokenAcceso)
 
 {
-  "nombre": "Diócesis TEST 1788877468590",
-  "codigo": "TD468590"
+  "nombre": "Diócesis TEST 1789061435274"
 }
 ```
 
 ## Response
 
 ```http
-HTTP 401
+HTTP 201
 connection: keep-alive
-content-length: 54
+content-length: 361
 content-type: application/json; charset=utf-8
-date: Tue, 08 Sep 2026 14:24:54 GMT
-etag: W/"36-7/fXKejgUjZKN8aW/UmVt+Lgj/Q"
+date: Thu, 10 Sep 2026 17:30:36 GMT
+etag: W/"169-Fh4T97uAThu8CWlpUJtSUxOLVhM"
 keep-alive: timeout=5
 x-powered-by: Express
 
-{"codigo":"NO_AUTENTICADO","mensaje":"No autenticado"}
+{"id":"db2bb6a1-1eb0-47c6-a19f-67ef2d945ed8","nombre":"Diócesis TEST 1789061435274","codigo":"D04","creadoEn":"2026-09-10T17:30:36.276741+00:00","creadoPorUsuarioId":"6bf12564-ed1f-4a20-809d-bf6b23e029ad","actualizadoEn":"2026-09-10T17:30:36.276741+00:00","actualizadoPorUsuarioId":null,"eliminadoEn":null,"eliminadoPorUsuarioId":null,"motivoEliminacion":null}
 ```
 
