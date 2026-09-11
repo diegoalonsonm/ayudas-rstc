@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  --color-lienzo: oklch(0.985 0.004 250);
+  --color-superficie: oklch(1 0 0);
+  --color-borde: oklch(0.915 0.006 255);
+  --color-tinta: oklch(0.23 0.02 260);
+  --color-tinta-suave: oklch(0.53 0.016 260);
+  --color-primario: oklch(0.46 0.1 258);
+  --color-primario-fuerte: oklch(0.39 0.1 258);
+  --color-primario-suave: oklch(0.95 0.02 258);
+  --color-exito: oklch(0.53 0.11 155);
+  --color-exito-suave: oklch(0.95 0.04 155);
+  --color-aviso: oklch(0.62 0.13 75);
+  --color-aviso-suave: oklch(0.96 0.05 85);
+  --color-peligro: oklch(0.53 0.17 25);
+  --color-peligro-suave: oklch(0.96 0.03 25);
+  --radius-marco: 0.75rem;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-borde);
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    background-color: var(--color-lienzo);
+    color: var(--color-tinta);
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primario);
+    outline-offset: 2px;
+  }
+}
+
+@utility marco {
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radius-marco);
+}
