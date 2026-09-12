@@ -58,6 +58,7 @@ export default async function PaginaOrganizacion() {
         nivel="parroquias"
         titulo="Parroquias"
         descripcion="Unidad que recibe y administra las solicitudes de ayuda."
+        conScroll
         etiquetaPadre="Vicaría"
         campoPadre="vicariaId"
         padres={organizacion.vicarias.map((item) => ({ id: item.id, nombre: item.nombre }))}

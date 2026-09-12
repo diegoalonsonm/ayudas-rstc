@@ -41,6 +41,7 @@ export function PanelNivel({
   campoPadre,
   entidades,
   padres,
+  conScroll = false,
 }: {
   nivel: NivelOrganizacion;
   titulo: string;
@@ -49,13 +50,14 @@ export function PanelNivel({
   campoPadre?: "diocesisId" | "vicariaId";
   entidades: EntidadTerritorial[];
   padres?: Array<{ id: string; nombre: string }>;
+  conScroll?: boolean;
 }) {
   const router = useRouter();
   const vigentes = entidades.filter((entidad) => !entidad.eliminadoEn);
   const nombresPadre = new Map((padres ?? []).map((padre) => [padre.id, padre.nombre]));
 
   return (
-    <Tarjeta>
+    <Tarjeta className={conScroll ? "overflow-hidden" : undefined}>
       <CabeceraTarjeta
         titulo={titulo}
         descripcion={descripcion}
@@ -72,8 +74,23 @@ export function PanelNivel({
       {vigentes.length === 0 ? (
         <Vacio mensaje={`No hay registros de ${titulo.toLowerCase()}.`} />
       ) : (
-        <Tabla>
-          <CabeceraTabla>
+        <Tabla
+          classNameContenedor={
+            conScroll
+              ? "max-h-[min(22rem,55vh)] overflow-auto overscroll-contain"
+              : undefined
+          }
+          tabIndex={conScroll ? 0 : undefined}
+          role={conScroll ? "region" : undefined}
+          aria-label={conScroll ? `Listado de ${titulo.toLowerCase()}` : undefined}
+        >
+          <CabeceraTabla
+            className={
+              conScroll
+                ? "[&_th]:sticky [&_th]:top-0 [&_th]:z-10 [&_th]:bg-[var(--color-lienzo)]"
+                : undefined
+            }
+          >
             <tr>
               <CeldaEncabezado>Código</CeldaEncabezado>
               <CeldaEncabezado>Nombre</CeldaEncabezado>

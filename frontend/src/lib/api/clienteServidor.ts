@@ -165,14 +165,18 @@ async function ejecutar(
       ? { next: { revalidate: opciones.revalidar ?? 0, tags: opciones.etiquetas } }
       : { cache: "no-store" as const };
 
+  const destino = construirUrl(ruta, opciones.parametros);
   try {
-    return await fetch(construirUrl(ruta, opciones.parametros), {
+    return await fetch(destino, {
       method: metodo,
       headers: cabeceras,
       body: cuerpo,
       ...cache,
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof ErrorApi) {
+      throw error;
+    }
     throw new ErrorApi(
       "No se pudo contactar la API; verifique que el backend esté en ejecución",
       CodigoError.RED,

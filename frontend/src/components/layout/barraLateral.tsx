@@ -33,7 +33,7 @@ export function BarraLateral() {
   return (
     <nav
       aria-label="Navegación principal"
-      className="flex shrink-0 gap-1 overflow-x-auto border-b border-[var(--color-borde)] bg-[var(--color-superficie)] px-3 py-2 lg:h-dvh lg:w-60 lg:flex-col lg:overflow-y-auto lg:border-b-0 lg:border-r lg:px-3 lg:py-4"
+      className="flex shrink-0 gap-1 overflow-x-auto border-b border-[var(--color-borde)] bg-[var(--color-superficie)] px-3 py-2 lg:sticky lg:top-0 lg:h-dvh lg:w-60 lg:flex-col lg:self-start lg:overflow-y-auto lg:border-b-0 lg:border-r lg:px-3 lg:py-4"
     >
       <div className="hidden items-center gap-2 px-2 pb-4 lg:flex">
         <span className="grid size-8 place-items-center rounded-lg bg-[var(--color-primario)] text-sm font-semibold text-white">

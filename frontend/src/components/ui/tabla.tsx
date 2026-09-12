@@ -1,17 +1,37 @@
 import * as React from "react";
 import { cn } from "@/lib/utiles";
 
-export function Tabla({ className, children }: { className?: string; children: React.ReactNode }) {
+export function Tabla({
+  className,
+  classNameContenedor,
+  children,
+  ...contenedorProps
+}: {
+  className?: string;
+  classNameContenedor?: string;
+  children: React.ReactNode;
+} & Omit<React.ComponentProps<"div">, "className" | "children">) {
   return (
-    <div className="w-full overflow-x-auto">
+    <div className={cn("w-full overflow-x-auto", classNameContenedor)} {...contenedorProps}>
       <table className={cn("w-full border-collapse text-sm", className)}>{children}</table>
     </div>
   );
 }
 
-export function CabeceraTabla({ children }: { children: React.ReactNode }) {
+export function CabeceraTabla({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <thead className="border-b border-[var(--color-borde)] bg-[var(--color-lienzo)] text-xs uppercase tracking-wide text-[var(--color-tinta-suave)]">
+    <thead
+      className={cn(
+        "border-b border-[var(--color-borde)] bg-[var(--color-lienzo)] text-xs uppercase tracking-wide text-[var(--color-tinta-suave)]",
+        className,
+      )}
+    >
       {children}
     </thead>
   );
