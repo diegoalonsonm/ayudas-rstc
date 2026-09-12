@@ -1,6 +1,6 @@
 import { ActorActual, Usuario } from "../../../domain/entities/tiposDominio";
-import { AccionAuditoria } from "../../../domain/enums/catalogosDominio";
-import { ErrorNoEncontrado, ErrorValidacion } from "../../../domain/errors/errorDominio";
+import { AccionAuditoria, CodigoRol } from "../../../domain/enums/catalogosDominio";
+import { ErrorNoAutorizado, ErrorNoEncontrado, ErrorValidacion } from "../../../domain/errors/errorDominio";
 import {
   RepositorioAuditoria,
   RepositorioOrganizacion,
@@ -186,20 +186,42 @@ export class CambiarAsignacionUsuario {
     const vicaria = vicariaId
       ? await this.repositorioOrganizacion.obtenerVicaria(vicariaId)
       : null;
-    this.servicioCreacion.validarCreacion(
+    this.servicioCreacion.validarReasignacion(
       actor,
+      usuarioId,
       entrada.rolCodigo,
       {
         diocesisId: entrada.diocesisId,
         vicariaId: entrada.vicariaId,
         parroquiaId: entrada.parroquiaId,
       },
-      usuario.identidadAutenticacionId,
       parroquia,
       vicaria,
     );
 
     const vigente = await this.repositorioUsuarios.obtenerAsignacionVigente(usuarioId);
+    if (actor.rolCodigo === CodigoRol.COORDINADOR_DIOCESANO) {
+      if (!vigente) {
+        throw new ErrorNoAutorizado("Solo puede reasignar usuarios dentro de su diócesis");
+      }
+      const parroquiaActual = vigente.parroquiaId
+        ? await this.repositorioOrganizacion.obtenerParroquia(vigente.parroquiaId)
+        : null;
+      const vicariaActualId = vigente.vicariaId ?? parroquiaActual?.vicariaId ?? null;
+      const vicariaActual = vicariaActualId
+        ? await this.repositorioOrganizacion.obtenerVicaria(vicariaActualId)
+        : null;
+      this.servicioCreacion.validarUsuarioObjetivoEnDiocesis(
+        actor,
+        {
+          diocesisId: vigente.diocesisId,
+          vicariaId: vigente.vicariaId,
+          parroquiaId: vigente.parroquiaId,
+        },
+        parroquiaActual,
+        vicariaActual,
+      );
+    }
     if (vigente) {
       await this.repositorioGenerico.actualizar("asignaciones_usuario", vigente.id, {
         vigenteHasta: new Date().toISOString(),

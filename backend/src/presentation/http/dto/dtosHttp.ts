@@ -178,7 +178,7 @@ export class RegistrarSolicitudDto {
 
   @IsArray()
   @ArrayMinSize(1)
-  @IsUUID("4", { each: true })
+  @IsUUID("all", { each: true })
   tiposAyuda!: string[];
 
   @IsOptional()

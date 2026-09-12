@@ -88,4 +88,91 @@ export class ServicioCreacionUsuarios {
       throw new ErrorNoAutorizado("Ningún usuario puede asignarse a sí mismo otro rol o alcance");
     }
   }
+
+  validarReasignacion(
+    actor: ActorActual,
+    usuarioObjetivoId: string,
+    rolNuevo: string,
+    alcance: AlcanceAsignacion,
+    parroquiaDestino: Parroquia | null,
+    vicariaDestino: Vicaria | null,
+  ): void {
+    this.validarCambioPropio(actor, usuarioObjetivoId);
+    this.servicioAlcance.validarFormaDeAlcance(rolNuevo, alcance);
+
+    if (actor.rolCodigo === CodigoRol.ADMINISTRADOR) {
+      return;
+    }
+
+    if (actor.rolCodigo !== CodigoRol.COORDINADOR_DIOCESANO) {
+      throw new ErrorNoAutorizado(
+        "Solo el administrador o el coordinador diocesano puede cambiar la asignación de un usuario",
+      );
+    }
+
+    if (rolNuevo === CodigoRol.ADMINISTRADOR) {
+      throw new ErrorNoAutorizado("El coordinador diocesano no puede asignar el rol administrador");
+    }
+
+    this.exigirAlcanceEnDiocesis(actor, rolNuevo, alcance, parroquiaDestino, vicariaDestino);
+  }
+
+  validarUsuarioObjetivoEnDiocesis(
+    actor: ActorActual,
+    alcanceActual: AlcanceAsignacion,
+    parroquiaActual: Parroquia | null,
+    vicariaActual: Vicaria | null,
+  ): void {
+    if (actor.rolCodigo === CodigoRol.ADMINISTRADOR) {
+      return;
+    }
+    if (actor.rolCodigo !== CodigoRol.COORDINADOR_DIOCESANO) {
+      throw new ErrorNoAutorizado(
+        "Solo el administrador o el coordinador diocesano puede cambiar la asignación de un usuario",
+      );
+    }
+    if (alcanceActual.parroquiaId) {
+      if (!parroquiaActual || !vicariaActual || vicariaActual.diocesisId !== actor.diocesisId) {
+        throw new ErrorNoAutorizado("Solo puede reasignar usuarios dentro de su diócesis");
+      }
+      return;
+    }
+    if (alcanceActual.vicariaId) {
+      if (!vicariaActual || vicariaActual.diocesisId !== actor.diocesisId) {
+        throw new ErrorNoAutorizado("Solo puede reasignar usuarios dentro de su diócesis");
+      }
+      return;
+    }
+    if (alcanceActual.diocesisId && alcanceActual.diocesisId === actor.diocesisId) {
+      return;
+    }
+    throw new ErrorNoAutorizado("Solo puede reasignar usuarios dentro de su diócesis");
+  }
+
+  private exigirAlcanceEnDiocesis(
+    actor: ActorActual,
+    rolNuevo: string,
+    alcance: AlcanceAsignacion,
+    parroquiaDestino: Parroquia | null,
+    vicariaDestino: Vicaria | null,
+  ): void {
+    if (!actor.diocesisId) {
+      throw new ErrorNoAutorizado("El coordinador diocesano no tiene diócesis asignada");
+    }
+    if (rolNuevo === CodigoRol.COORDINADOR_DIOCESANO) {
+      if (alcance.diocesisId !== actor.diocesisId) {
+        throw new ErrorNoAutorizado("Solo puede reasignar usuarios dentro de su diócesis");
+      }
+      return;
+    }
+    if (rolNuevo === CodigoRol.COORDINADOR_VICARIAL) {
+      if (!vicariaDestino || vicariaDestino.diocesisId !== actor.diocesisId) {
+        throw new ErrorNoAutorizado("Solo puede reasignar usuarios dentro de su diócesis");
+      }
+      return;
+    }
+    if (!parroquiaDestino || !vicariaDestino || vicariaDestino.diocesisId !== actor.diocesisId) {
+      throw new ErrorNoAutorizado("Solo puede reasignar usuarios dentro de su diócesis");
+    }
+  }
 }
