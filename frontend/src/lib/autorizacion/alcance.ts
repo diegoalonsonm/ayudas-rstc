@@ -1,5 +1,5 @@
 import { CodigoRol } from "../dominio/enums";
-import type { Parroquia, Sesion, Vicaria } from "../dominio/tipos";
+import type { Diocesis, Parroquia, Sesion, Vicaria } from "../dominio/tipos";
 
 export type Alcance = {
   diocesisId: string | null;
@@ -123,6 +123,16 @@ export function parroquiasParaCrearUsuario(
   return parroquiasAccesibles(sesion, parroquias, vicarias);
 }
 
+export function diocesisParaCrearUsuario(sesion: Sesion, diocesis: Diocesis[]): Diocesis[] {
+  if (sesion.rolCodigo === CodigoRol.ADMINISTRADOR) {
+    return diocesis;
+  }
+  if (sesion.rolCodigo === CodigoRol.COORDINADOR_DIOCESANO) {
+    return diocesis.filter((item) => item.id === sesion.diocesisId);
+  }
+  return [];
+}
+
 export function vicariasParaCrearUsuario(sesion: Sesion, vicarias: Vicaria[]): Vicaria[] {
   if (sesion.rolCodigo === CodigoRol.ADMINISTRADOR) {
     return vicarias;
@@ -130,7 +140,18 @@ export function vicariasParaCrearUsuario(sesion: Sesion, vicarias: Vicaria[]): V
   if (sesion.rolCodigo === CodigoRol.COORDINADOR_DIOCESANO) {
     return vicarias.filter((vicaria) => vicaria.diocesisId === sesion.diocesisId);
   }
+  if (sesion.rolCodigo === CodigoRol.COORDINADOR_VICARIAL) {
+    return vicarias.filter((vicaria) => vicaria.id === sesion.vicariaId);
+  }
   return [];
+}
+
+function conEtiquetaSiFalta(etiqueta: string, nombre: string): string {
+  const recortado = nombre.trim();
+  if (recortado.toLocaleLowerCase("es").startsWith(etiqueta.toLocaleLowerCase("es"))) {
+    return recortado;
+  }
+  return `${etiqueta} ${recortado}`;
 }
 
 export function describirAlcance(
@@ -142,13 +163,16 @@ export function describirAlcance(
   },
 ): string {
   if (alcance.parroquiaId) {
-    return `Parroquia ${nombres.parroquias.get(alcance.parroquiaId) ?? alcance.parroquiaId}`;
+    const nombre = nombres.parroquias.get(alcance.parroquiaId) ?? alcance.parroquiaId;
+    return conEtiquetaSiFalta("Parroquia", nombre);
   }
   if (alcance.vicariaId) {
-    return `Vicaría ${nombres.vicarias.get(alcance.vicariaId) ?? alcance.vicariaId}`;
+    const nombre = nombres.vicarias.get(alcance.vicariaId) ?? alcance.vicariaId;
+    return conEtiquetaSiFalta("Vicaría", nombre);
   }
   if (alcance.diocesisId) {
-    return `Diócesis ${nombres.diocesis.get(alcance.diocesisId) ?? alcance.diocesisId}`;
+    const nombre = nombres.diocesis.get(alcance.diocesisId) ?? alcance.diocesisId;
+    return conEtiquetaSiFalta("Diócesis", nombre);
   }
   return "Alcance diocesano completo";
 }

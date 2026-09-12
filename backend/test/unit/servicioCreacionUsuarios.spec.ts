@@ -113,4 +113,106 @@ describe("ServicioCreacionUsuarios", () => {
       ),
     ).not.toThrow();
   });
+
+  it("permite al coordinador diocesano reasignar un parroquial dentro de su diócesis", () => {
+    expect(() =>
+      servicio.validarReasignacion(
+        actor({
+          rolCodigo: CodigoRol.COORDINADOR_DIOCESANO,
+          diocesisId: "d1",
+          vicariaId: null,
+          parroquiaId: null,
+        }),
+        "u2",
+        CodigoRol.COORDINADOR_PARROQUIAL,
+        { diocesisId: null, vicariaId: null, parroquiaId: "p1" },
+        parroquia,
+        vicaria,
+      ),
+    ).not.toThrow();
+  });
+
+  it("impide que el coordinador diocesano asigne administrador", () => {
+    expect(() =>
+      servicio.validarReasignacion(
+        actor({
+          rolCodigo: CodigoRol.COORDINADOR_DIOCESANO,
+          diocesisId: "d1",
+          vicariaId: null,
+          parroquiaId: null,
+        }),
+        "u2",
+        CodigoRol.ADMINISTRADOR,
+        { diocesisId: null, vicariaId: null, parroquiaId: null },
+        null,
+        null,
+      ),
+    ).toThrow(ErrorNoAutorizado);
+  });
+
+  it("impide que el coordinador diocesano reasigne fuera de su diócesis", () => {
+    const vicariaAjena: Vicaria = { ...vicaria, id: "v-otra", diocesisId: "d-otra" };
+    expect(() =>
+      servicio.validarReasignacion(
+        actor({
+          rolCodigo: CodigoRol.COORDINADOR_DIOCESANO,
+          diocesisId: "d1",
+          vicariaId: null,
+          parroquiaId: null,
+        }),
+        "u2",
+        CodigoRol.COORDINADOR_VICARIAL,
+        { diocesisId: null, vicariaId: "v-otra", parroquiaId: null },
+        null,
+        vicariaAjena,
+      ),
+    ).toThrow(ErrorNoAutorizado);
+  });
+
+  it("impide que un coordinador vicarial reasigne", () => {
+    expect(() =>
+      servicio.validarReasignacion(
+        actor({ rolCodigo: CodigoRol.COORDINADOR_VICARIAL }),
+        "u2",
+        CodigoRol.COORDINADOR_PARROQUIAL,
+        { diocesisId: null, vicariaId: null, parroquiaId: "p1" },
+        parroquia,
+        vicaria,
+      ),
+    ).toThrow(ErrorNoAutorizado);
+  });
+
+  it("permite al administrador reasignar cualquier rol", () => {
+    expect(() =>
+      servicio.validarReasignacion(
+        actor({
+          rolCodigo: CodigoRol.ADMINISTRADOR,
+          diocesisId: null,
+          vicariaId: null,
+          parroquiaId: null,
+        }),
+        "u2",
+        CodigoRol.COORDINADOR_DIOCESANO,
+        { diocesisId: "d1", vicariaId: null, parroquiaId: null },
+        null,
+        null,
+      ),
+    ).not.toThrow();
+  });
+
+  it("impide reasignar a un usuario de otra diócesis", () => {
+    expect(() =>
+      servicio.validarUsuarioObjetivoEnDiocesis(
+        actor({
+          rolCodigo: CodigoRol.COORDINADOR_DIOCESANO,
+          diocesisId: "d1",
+          vicariaId: null,
+          parroquiaId: null,
+        }),
+        { diocesisId: "d-otra", vicariaId: null, parroquiaId: null },
+        null,
+        null,
+      ),
+    ).toThrow(ErrorNoAutorizado);
+  });
 });

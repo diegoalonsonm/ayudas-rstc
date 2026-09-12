@@ -3,8 +3,12 @@ import { TablaUsuarios } from "@/components/usuarios/tablaUsuarios";
 import { Aviso, EncabezadoPagina, Tarjeta } from "@/components/ui/marco";
 import { ErrorApi } from "@/lib/api/errorApi";
 import { listarUsuariosConAsignacion } from "@/lib/api/recursos/usuarios";
-import { parroquiasParaCrearUsuario, vicariasParaCrearUsuario } from "@/lib/autorizacion/alcance";
-import { puede, rolesQuePuedeCrear } from "@/lib/autorizacion/permisos";
+import {
+  diocesisParaCrearUsuario,
+  parroquiasParaCrearUsuario,
+  vicariasParaCrearUsuario,
+} from "@/lib/autorizacion/alcance";
+import { rolesQuePuedeCrear } from "@/lib/autorizacion/permisos";
 import { etiquetaRol } from "@/lib/dominio/etiquetas";
 import type { UsuarioConAsignacion } from "@/lib/dominio/tipos";
 import { organizacionSegura, sesionActual } from "@/lib/sesion/servidor";
@@ -18,7 +22,6 @@ export const metadata = {
 export default async function PaginaUsuarios() {
   const sesion = await sesionActual();
   const organizacion = await organizacionSegura();
-  const puedeListar = puede(sesion, "usuariosListar");
 
   let usuarios: UsuarioConAsignacion[] = [];
   let error: string | null = null;
@@ -29,7 +32,7 @@ export default async function PaginaUsuarios() {
   }
 
   const opciones = {
-    diocesis: organizacion.diocesis,
+    diocesis: diocesisParaCrearUsuario(sesion, organizacion.diocesis),
     vicarias: vicariasParaCrearUsuario(sesion, organizacion.vicarias),
     parroquias: parroquiasParaCrearUsuario(
       sesion,
@@ -46,15 +49,6 @@ export default async function PaginaUsuarios() {
         descripcion={`Desde su rol puede crear cuentas con rol ${rolesCreables}, dentro de su alcance territorial.`}
         acciones={<FormularioUsuario opciones={opciones} />}
       />
-
-      {!puedeListar ? (
-        <Aviso tono="advertencia" titulo="Solo puede ver su propia cuenta">
-          Las políticas de seguridad a nivel de fila de la base de datos permiten leer la tabla de
-          usuarios únicamente al administrador y al coordinador diocesano. Con su rol, el listado
-          devuelve solo su propio registro, aunque sí puede crear cuentas subordinadas con el
-          formulario de arriba.
-        </Aviso>
-      ) : null}
 
       {error ? <Aviso tono="peligro">{error}</Aviso> : null}
 

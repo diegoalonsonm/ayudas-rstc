@@ -22,7 +22,11 @@ import {
 } from "@/components/ui/tabla";
 import { accionActualizarUsuario, accionCambiarAsignacion } from "@/lib/acciones/usuarios";
 import { describirAlcance, validarFormaDeAlcance, type Alcance } from "@/lib/autorizacion/alcance";
-import { puedeEditarUsuario, puedeReasignarUsuario } from "@/lib/autorizacion/permisos";
+import {
+  puedeEditarUsuario,
+  puedeReasignarUsuario,
+  rolesParaReasignar,
+} from "@/lib/autorizacion/permisos";
 import { CODIGOS_ROL, type CodigoRol } from "@/lib/dominio/enums";
 import { etiquetaRol } from "@/lib/dominio/etiquetas";
 import type { Diocesis, Parroquia, UsuarioConAsignacion, Vicaria } from "@/lib/dominio/tipos";
@@ -165,7 +169,7 @@ export function TablaUsuarios({
                         motivo={
                           sesion.usuarioId === usuario.id
                             ? "Nadie puede cambiar su propio rol ni su propio alcance"
-                            : "Solo el administrador puede cambiar la asignación de un usuario"
+                            : "Solo el administrador o el coordinador diocesano puede cambiar la asignación de un usuario"
                         }
                       >
                         <FormularioAsignacion
@@ -199,9 +203,13 @@ function FormularioAsignacion({
   rolActual: CodigoRol;
   opciones: { diocesis: Diocesis[]; vicarias: Vicaria[]; parroquias: Parroquia[] };
 }) {
+  const sesion = useSesion();
   const router = useRouter();
+  const roles = rolesParaReasignar(sesion);
   const [abierto, setAbierto] = React.useState(false);
-  const [rolCodigo, setRolCodigo] = React.useState<CodigoRol>(rolActual);
+  const [rolCodigo, setRolCodigo] = React.useState<CodigoRol>(
+    roles.includes(rolActual) ? rolActual : (roles[0] ?? rolActual),
+  );
   const [alcance, setAlcance] = React.useState<Alcance>({
     diocesisId: null,
     vicariaId: null,
@@ -253,7 +261,7 @@ function FormularioAsignacion({
                 setAlcance({ diocesisId: null, vicariaId: null, parroquiaId: null });
               }}
             >
-              {CODIGOS_ROL.map((rol) => (
+              {roles.map((rol) => (
                 <option key={rol} value={rol}>
                   {etiquetaRol(rol)}
                 </option>
@@ -268,7 +276,7 @@ function FormularioAsignacion({
             alCambiar={setAlcance}
           />
 
-          <Campo etiqueta="Motivo" ayuda="Se guarda en los eventos CAMBIAR_ROL y CAMBIAR_ALCANCE.">
+          <Campo etiqueta="Motivo">
             <AreaTexto value={motivo} onChange={(evento) => setMotivo(evento.target.value)} />
           </Campo>
 

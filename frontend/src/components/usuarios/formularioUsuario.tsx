@@ -26,7 +26,6 @@ export function FormularioUsuario({
   const roles = rolesQuePuedeCrear(sesion);
   const [abierto, setAbierto] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [exito, setExito] = React.useState<string | null>(null);
   const [guardando, setGuardando] = React.useState(false);
   const [rolCodigo, setRolCodigo] = React.useState<CodigoRol>(roles[0]);
   const [alcance, setAlcance] = React.useState<Alcance>(() =>
@@ -43,7 +42,6 @@ export function FormularioUsuario({
 
   async function guardar() {
     setError(null);
-    setExito(null);
     setGuardando(true);
     const resultado = await accionCrearUsuario({
       nombreCompleto: valores.nombreCompleto,
@@ -61,7 +59,7 @@ export function FormularioUsuario({
       return;
     }
     setValores({ nombreCompleto: "", correo: "", contrasena: "", motivo: "" });
-    setExito(`Se creó la cuenta de ${resultado.datos.nombreCompleto}.`);
+    setAbierto(false);
     router.refresh();
   }
 
@@ -72,7 +70,6 @@ export function FormularioUsuario({
         setAbierto(valor);
         if (!valor) {
           setError(null);
-          setExito(null);
         }
       }}
     >
@@ -144,7 +141,7 @@ export function FormularioUsuario({
             alCambiar={setAlcance}
           />
 
-          <Campo etiqueta="Motivo" ayuda="Se guarda en el evento de auditoría CREAR_USUARIO.">
+          <Campo etiqueta="Motivo">
             <AreaTexto
               value={valores.motivo}
               onChange={(evento) => setValores({ ...valores, motivo: evento.target.value })}
@@ -153,7 +150,6 @@ export function FormularioUsuario({
 
           {problemaAlcance ? <Aviso tono="advertencia">{problemaAlcance}</Aviso> : null}
           {error ? <Aviso tono="peligro">{error}</Aviso> : null}
-          {exito ? <Aviso tono="exito">{exito}</Aviso> : null}
 
           <div className="flex justify-end gap-2">
             <Boton variante="contorno" onClick={() => setAbierto(false)} disabled={guardando}>

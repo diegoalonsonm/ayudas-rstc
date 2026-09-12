@@ -54,6 +54,7 @@ export function AdministradorCatalogos({
             <Insignia tono="advertencia">Solo lectura</Insignia>
           ) : (
             <FormularioItem
+              key={slug}
               slug={slug}
               titulo={`Agregar a ${ETIQUETAS_CATALOGO[slug].toLowerCase()}`}
               mostrarTipoAyuda={esTipoAyuda}
@@ -174,6 +175,18 @@ export function AdministradorCatalogos({
   );
 }
 
+function valoresIniciales(item?: ItemCatalogo) {
+  return {
+    codigo: item?.codigo ?? "",
+    nombre: item?.nombre ?? "",
+    ordenPresentacion: item?.ordenPresentacion?.toString() ?? "",
+    requiereDetalle: item?.requiereDetalle ? "true" : "false",
+    montoMinimo: item?.montoMinimo?.toString() ?? "",
+    montoMaximo: item?.montoMaximo?.toString() ?? "",
+    padreId: "",
+  };
+}
+
 function FormularioItem({
   slug,
   titulo,
@@ -197,15 +210,7 @@ function FormularioItem({
   const [abierto, setAbierto] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [guardando, setGuardando] = React.useState(false);
-  const [valores, setValores] = React.useState({
-    codigo: item?.codigo ?? "",
-    nombre: item?.nombre ?? "",
-    ordenPresentacion: item?.ordenPresentacion?.toString() ?? "",
-    requiereDetalle: item?.requiereDetalle ? "true" : "false",
-    montoMinimo: item?.montoMinimo?.toString() ?? "",
-    montoMaximo: item?.montoMaximo?.toString() ?? "",
-    padreId: "",
-  });
+  const [valores, setValores] = React.useState(() => valoresIniciales(item));
 
   async function guardar() {
     setError(null);
@@ -236,7 +241,16 @@ function FormularioItem({
   }
 
   return (
-    <Dialogo open={abierto} onOpenChange={setAbierto}>
+    <Dialogo
+      open={abierto}
+      onOpenChange={(valor) => {
+        setAbierto(valor);
+        if (!valor) {
+          setError(null);
+          setValores(valoresIniciales(item));
+        }
+      }}
+    >
       <DisparadorDialogo asChild>
         {disparador ?? (
           <Boton variante="contorno" tamano="pequeno">

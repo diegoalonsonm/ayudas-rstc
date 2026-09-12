@@ -50,7 +50,7 @@ export const MATRIZ_PERMISOS = {
   usuariosListar: DIOCESANOS,
   usuariosCrear: TODOS,
   usuariosEditar: SOLO_ADMINISTRADOR,
-  usuariosReasignar: SOLO_ADMINISTRADOR,
+  usuariosReasignar: DIOCESANOS,
 
   organizacionVer: TODOS,
   organizacionEscribir: SOLO_ADMINISTRADOR,
@@ -150,6 +150,19 @@ export function puedeEditarUsuario(sesion: Sesion | null, usuarioId: string): bo
 
 export function puedeReasignarUsuario(sesion: Sesion | null, usuarioId: string): boolean {
   return puede(sesion, "usuariosReasignar") && sesion?.usuarioId !== usuarioId;
+}
+
+export function rolesParaReasignar(sesion: Sesion | null): CodigoRol[] {
+  if (!sesion) {
+    return [];
+  }
+  if (sesion.rolCodigo === CodigoRol.ADMINISTRADOR) {
+    return [...TODOS];
+  }
+  if (sesion.rolCodigo === CodigoRol.COORDINADOR_DIOCESANO) {
+    return TODOS.filter((rol) => rol !== CodigoRol.ADMINISTRADOR);
+  }
+  return [];
 }
 
 const ROLES_MULTIPARROQUIA: CodigoRol[] = [

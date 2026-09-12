@@ -85,7 +85,7 @@ export async function accionCambiarAsignacion(
     return fallido(
       sesion.usuarioId === usuarioId
         ? "Nadie puede cambiar su propio rol ni su propio alcance"
-        : "Solo el administrador puede cambiar la asignación de un usuario",
+        : "Solo el administrador o el coordinador diocesano puede cambiar la asignación de un usuario",
     );
   }
   const validado = esquemaCambiarAsignacion.safeParse(entrada);
