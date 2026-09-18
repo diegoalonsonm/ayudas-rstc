@@ -88,13 +88,13 @@ En [Access controls](https://login.tailscale.com/admin/acls) hace falta un tag q
 }
 ```
 
-Más restrictivo (solo Postgres en el servidor de dev):
+Más restrictivo (Postgres y SSH en el servidor de dev; SSH hace falta para publicar frontend/backend):
 
 ```json
 {
   "action": "accept",
   "src": ["tag:ci"],
-  "dst": ["100.127.208.105:5432"]
+  "dst": ["100.127.208.105:5432", "100.127.208.105:22"]
 }
 ```
 
