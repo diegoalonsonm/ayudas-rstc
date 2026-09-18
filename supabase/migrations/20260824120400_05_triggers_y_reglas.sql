@@ -575,13 +575,14 @@ BEGIN
   ) VALUES (
     v_actor.id,
     v_actor_rol,
-    CASE WHEN v_actor.id IS NULL THEN 'SISTEMA' ELSE 'USUARIO' END,
+    CASE WHEN v_actor.id IS NULL THEN 'SISTEMA'::ayudas_rstc.tipo_actor_auditoria
+         ELSE 'USUARIO'::ayudas_rstc.tipo_actor_auditoria END,
     'CREAR_USUARIO',
     'usuarios',
     v_nuevo_id,
     p_motivo,
-    'EXITOSO',
-    'APLICACION'
+    'EXITOSO'::ayudas_rstc.resultado_auditoria,
+    'APLICACION'::ayudas_rstc.origen_auditoria
   );
 
   RETURN v_nuevo_id;

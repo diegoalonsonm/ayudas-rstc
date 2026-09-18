@@ -1,0 +1,106 @@
+name: Deploy desarrollo
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - "frontend/**"
+      - "backend/**"
+      - "deploy/**"
+      - ".github/workflows/deploy-dev.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-development:
+    name: Publicar frontend y backend
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    environment: development
+    concurrency:
+      group: deploy-development-app
+      cancel-in-progress: false
+    env:
+      DEV_SSH_HOST: ${{ secrets.DEV_SSH_HOST }}
+      DEV_SSH_USER: ${{ secrets.DEV_SSH_USER }}
+      DEV_DEPLOY_PATH: ${{ vars.DEV_DEPLOY_PATH }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Comprobar secretos y destino
+        run: |
+          if [ -z "$DEV_SSH_HOST" ] || [ -z "$DEV_SSH_USER" ] || [ -z "${{ secrets.DEV_SSH_PRIVATE_KEY }}" ]; then
+            echo "Faltan DEV_SSH_HOST, DEV_SSH_USER y/o DEV_SSH_PRIVATE_KEY en el environment development."
+            exit 1
+          fi
+          case "$DEV_SSH_HOST" in
+            127.0.0.1|localhost|::1)
+              echo "DEV_SSH_HOST apunta a localhost. Use la IP Tailscale del servidor (100.x)."
+              exit 1
+              ;;
+          esac
+          if [ -z "${{ secrets.TS_OAUTH_CLIENT_ID }}" ] || [ -z "${{ secrets.TS_OAUTH_SECRET }}" ]; then
+            echo "Faltan TS_OAUTH_CLIENT_ID y/o TS_OAUTH_SECRET en el environment development."
+            exit 1
+          fi
+          path="${DEV_DEPLOY_PATH:-/opt/ayudas-rstc}"
+          echo "Destino: user=$DEV_SSH_USER host=$DEV_SSH_HOST path=$path"
+          echo "DEPLOY_PATH=$path" >> "$GITHUB_ENV"
+
+      - name: Conectar a Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          ping: ${{ env.DEV_SSH_HOST }}
+
+      - name: Instalar rsync
+        run: sudo apt-get update && sudo apt-get install -y rsync
+
+      - name: Preparar clave SSH
+        env:
+          DEV_SSH_PRIVATE_KEY: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEV_SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          for i in 1 2 3 4 5; do
+            if ssh-keyscan -H "$DEV_SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null; then
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "No se pudo obtener la huella SSH de $DEV_SSH_HOST. ¿El ACL de Tailscale permite tag:ci hacia :22?"
+          exit 1
+
+      - name: Sincronizar código
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes \
+            "$DEV_SSH_USER@$DEV_SSH_HOST" "mkdir -p '$DEPLOY_PATH'"
+          rsync -az --delete \
+            --exclude '.git/' \
+            --exclude '.env' \
+            --exclude 'node_modules/' \
+            --exclude 'frontend/.next/' \
+            --exclude 'backend/dist/' \
+            --exclude '.DS_Store' \
+            -e "ssh -i $HOME/.ssh/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes" \
+            ./ "$DEV_SSH_USER@$DEV_SSH_HOST:$DEPLOY_PATH/"
+
+      - name: Construir y levantar contenedores
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes \
+            "$DEV_SSH_USER@$DEV_SSH_HOST" bash -s <<EOF
+          set -euo pipefail
+          cd "$DEPLOY_PATH"
+          if [ ! -f .env ]; then
+            echo "Falta $DEPLOY_PATH/.env en el servidor. Copie deploy/.env.example y complete las claves."
+            exit 1
+          fi
+          docker compose -f deploy/docker-compose.yml --env-file .env up -d --build
+          docker compose -f deploy/docker-compose.yml --env-file .env ps
+          EOF

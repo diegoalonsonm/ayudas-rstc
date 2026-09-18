@@ -59,11 +59,42 @@ jobs:
           version: latest
 
       - name: Comprobar destino de desarrollo
+        id: dest
         run: |
           if [ -z "$DEV_DATABASE_URL" ]; then
-            echo "Falta el secreto DEV_DATABASE_URL (postgres://usuario:clave@host:puerto/postgres)."
+            echo "Falta el secreto DEV_DATABASE_URL (postgresql://usuario:clave@HOST:PUERTO/postgres)."
             exit 1
           fi
+          python3 - <<'PY'
+          import os
+          from urllib.parse import urlparse
+          u = urlparse(os.environ["DEV_DATABASE_URL"])
+          host = (u.hostname or "").lower()
+          port = u.port or 5432
+          print(f"Destino (sin secretos): host={host} port={port} db={(u.path or '/').lstrip('/') or 'postgres'}")
+          if host in ("127.0.0.1", "localhost", "::1"):
+              raise SystemExit(
+                  "DEV_DATABASE_URL apunta a localhost. Usa la IP Tailscale del servidor "
+                  "(100.x) y el puerto de Postgres (5432), no 127.0.0.1 ni :8000/rest."
+              )
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"host={host}\n")
+          PY
+
+      - name: Comprobar secretos de Tailscale
+        run: |
+          if [ -z "${{ secrets.TS_OAUTH_CLIENT_ID }}" ] || [ -z "${{ secrets.TS_OAUTH_SECRET }}" ]; then
+            echo "Faltan TS_OAUTH_CLIENT_ID y/o TS_OAUTH_SECRET en el environment development."
+            exit 1
+          fi
+
+      - name: Conectar a Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          ping: ${{ steps.dest.outputs.host }}
 
       - name: Vista previa de migraciones pendientes
         run: supabase db push --db-url "$DEV_DATABASE_URL" --dry-run

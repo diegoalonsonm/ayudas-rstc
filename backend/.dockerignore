@@ -1,0 +1,15 @@
+node_modules
+dist
+coverage
+.env
+.env.*
+!.env.example
+*.md
+docs
+test
+scripts
+**/*.spec.ts
+.git
+.gitignore
+Dockerfile
+.dockerignore

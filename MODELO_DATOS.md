@@ -68,7 +68,7 @@ erDiagram
 
 - `id`
 - `nombre`
-- `codigo`
+- `codigo`: identificador interno de control. Si no se indica al crear, la BD asigna `D01`, `D02`, … (no es UUID). Se puede enviar un valor explícito si más adelante existe un código institucional.
 - Campos comunes de auditoría y borrado lógico.
 
 ### `vicarias`
@@ -76,7 +76,7 @@ erDiagram
 - `id`
 - `diocesis_id`
 - `nombre`
-- `codigo`
+- `codigo`: si no se indica, la BD asigna `{codigo_diócesis}-V01` (p. ej. `D01-V01`).
 - Campos comunes.
 
 ### `parroquias`
@@ -84,7 +84,7 @@ erDiagram
 - `id`
 - `vicaria_id`
 - `nombre`
-- `codigo`
+- `codigo`: si no se indica, la BD asigna `{codigo_vicaría}-P001` (p. ej. `D01-V01-P001`).
 - Campos comunes.
 
 Relación jerárquica:
@@ -456,8 +456,8 @@ Reglas de alcance:
 - `COORDINADOR_PARROQUIAL`: acceso a su parroquia.
 - `COORDINADOR_VICARIAL`: acceso a todas las parroquias de su vicaría.
 - `COORDINADOR_DIOCESANO`: acceso a toda la diócesis.
-- `ADMINISTRADOR`: acceso total.
-- Una asignación debe tener exactamente el alcance requerido por el rol; por ejemplo, un coordinador vicarial requiere `vicaria_id` y no `parroquia_id`.
+- `ADMINISTRADOR`: acceso total en todos los niveles (diócesis, vicaría y parroquia), con alcance territorial opcional de un solo nivel para ubicar la asignación.
+- Una asignación debe tener exactamente el alcance requerido por el rol; por ejemplo, un coordinador vicarial requiere `vicaria_id` y no `parroquia_id`. El administrador puede omitir alcance o indicar un único nivel.
 - La creación de usuarios y la asignación de su rol y alcance se ejecutan en una sola operación transaccional.
 
 Reglas de creación de usuarios:
