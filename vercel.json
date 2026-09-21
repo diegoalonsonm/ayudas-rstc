@@ -14,7 +14,13 @@
         },
         "backend": {
             "root": "backend",
-            "entrypoint": "src/main.ts"
+            "framework": "nestjs",
+            "entrypoint": "src/main.ts",
+            "functions": {
+                "src/main.ts": {
+                    "includeFiles": "node_modules/reflect-metadata/**"
+                }
+            }
         }
     },
     "rewrites": [

@@ -1,7 +1,9 @@
-import "reflect-metadata";
+import * as reflectMetadata from "reflect-metadata";
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
+
+void reflectMetadata;
 
 async function arrancar(): Promise<void> {
   const app = await NestFactory.create(AppModule);
