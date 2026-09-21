@@ -15,12 +15,7 @@
         "backend": {
             "root": "backend",
             "framework": "nestjs",
-            "entrypoint": "src/main.ts",
-            "functions": {
-                "src/main.ts": {
-                    "includeFiles": "node_modules/reflect-metadata/**"
-                }
-            }
+            "outputDirectory": "dist"
         }
     },
     "rewrites": [
