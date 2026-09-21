@@ -1,11 +1,18 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { FormularioIngreso } from "@/components/sesion/formularioIngreso";
+import { leerTokens } from "@/lib/sesion/cookies";
 
 export const metadata = {
   title: "Ingreso — Ayudas RSTC",
 };
 
-export default function PaginaIngreso() {
+export default async function PaginaIngreso() {
+  const { tokenAcceso, tokenRenovacion } = await leerTokens();
+  if (tokenAcceso || tokenRenovacion) {
+    redirect("/panel");
+  }
+
   return (
     <main className="grid min-h-dvh place-items-center px-5 py-10">
       <div className="w-full max-w-sm space-y-6">
