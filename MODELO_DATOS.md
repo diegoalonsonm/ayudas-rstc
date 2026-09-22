@@ -153,7 +153,7 @@ Catálogos jerárquicos para evitar diferencias ortográficas y facilitar filtro
 
 - `distritos.canton_id`
 - `barrios.distrito_id`
-- `codigo`
+- `codigo` (único entre barrios activos a nivel provincial, p. ej. `BA-001`)
 - `nombre`
 - Campos comunes.
 
