@@ -18,16 +18,29 @@ export type OpcionesSolicitud = {
   etiquetas?: string[];
 };
 
-export function urlBaseApi(): string {
-  const url = process.env.URL_API_BACKEND;
-  if (!url) {
-    throw new ErrorApi(
-      "Falta la variable URL_API_BACKEND; copie frontend/.env.example a frontend/.env",
-      CodigoError.INTERNO,
-      500,
-    );
+function leerVariableEntorno(nombre: string): string | undefined {
+  const valor = process.env[nombre];
+  if (!valor) {
+    return undefined;
   }
-  return url.replace(/\/$/, "");
+  const limpio = valor.trim();
+  return limpio.length > 0 ? limpio : undefined;
+}
+
+export function urlBaseApi(): string {
+  const explicita = leerVariableEntorno("URL_API_BACKEND");
+  if (explicita) {
+    return explicita.replace(/\/$/, "");
+  }
+  const servicio = leerVariableEntorno("URL_SERVICIO_BACKEND");
+  if (servicio) {
+    return `${servicio.replace(/\/$/, "")}/api/v1`;
+  }
+  throw new ErrorApi(
+    "Falta la variable URL_API_BACKEND; copie frontend/.env.example a frontend/.env",
+    CodigoError.INTERNO,
+    500,
+  );
 }
 
 export async function solicitar<T>(ruta: string, opciones: OpcionesSolicitud = {}): Promise<T> {
